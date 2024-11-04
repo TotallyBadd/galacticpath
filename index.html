@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galactic Path</title>
+<style>
+    /* Allgemeines Styling */
+    body, html {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #000;
+        color: white;
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    /* Hintergrund - animierte Sterne */
+    @keyframes starScroll {
+        0% { background-position: 0 0; }
+        100% { background-position: 0 2000px; }
+    }
+    body {
+        background: url('https://www.transparenttextures.com/patterns/stardust.png') repeat;
+        animation: starScroll 10s linear infinite;
+    }
+
+    /* Spielfläche */
+    #gameCanvas {
+        background: rgba(0, 0, 0, 0.7);
+        border: 2px solid #ffffff22;
+        box-shadow: 0 0 15px #0ff;
+    }
+
+    /* Text im Spiel */
+    #score {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-size: 20px;
+        color: #0ff;
+    }
+
+    /* Spiel-Over Screen */
+    #gameOver {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 36px;
+        text-align: center;
+        color: #f00;
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 20px;
+        border-radius: 10px;
+    }
+</style>
+</head>
+<body>
+
+<div id="score">Score: 0</div>
+<div id="gameOver">Game Over!<br><button onclick="startGame()">Restart</button></div>
+<canvas id="gameCanvas" width="400" height="600"></canvas>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let player, obstacles, score, gameOverScreen;
+    let isGameOver = false;
+    let speed = 2;
+
+    function startGame() {
+        player = { x: 180, y: 550, width: 20, height: 20 };
+        obstacles = [];
+        score = 0;
+        isGameOver = false;
+        speed = 2;
+        document.getElementById("gameOver").style.display = "none";
+        requestAnimationFrame(updateGame);
+    }
+
+    function createObstacle() {
+        const x = Math.floor(Math.random() * (canvas.width - 20));
+        obstacles.push({ x: x, y: 0, width: 20, height: 20 });
+    }
+
+    function drawPlayer() {
+        ctx.fillStyle = "#0f0";
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+    }
+
+    function drawObstacles() {
+        ctx.fillStyle = "#f00";
+        obstacles.forEach(obstacle => {
+            ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            obstacle.y += speed;
+        });
+    }
+
+    function checkCollisions() {
+        obstacles.forEach(obstacle => {
+            if (
+                player.x < obstacle.x + obstacle.width &&
+                player.x + player.width > obstacle.x &&
+                player.y < obstacle.y + obstacle.height &&
+                player.height + player.y > obstacle.y
+            ) {
+                isGameOver = true;
+            }
+        });
+    }
+
+    function updateScore() {
+        score++;
+        document.getElementById("score").innerText = `Score: ${score}`;
+        if (score % 100 === 0) speed += 0.5;
+    }
+
+    function updateGame() {
+        if (isGameOver) {
+            document.getElementById("gameOver").style.display = "block";
+            return;
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawPlayer();
+        drawObstacles();
+        updateScore();
+        checkCollisions();
+
+        if (Math.random() < 0.02) createObstacle();
+
+        requestAnimationFrame(updateGame);
+    }
+
+    window.addEventListener("keydown", (e) => {
+        const step = 10;
+        if (e.key === "ArrowLeft" && player.x > 0) player.x -= step;
+        if (e.key === "ArrowRight" && player.x < canvas.width - player.width) player.x += step;
+    });
+
+    startGame();
+</script>
+</body>
+</html>
