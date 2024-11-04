@@ -7,7 +7,6 @@
 <link rel="icon" href="https://img.icons8.com/?size=80&id=oqrxoYQucToV&format=png" type="image/png">
 
 <style>
-    /* Allgemeines Styling */
     body, html {
         margin: 0;
         padding: 0;
@@ -21,7 +20,6 @@
         height: 100vh;
     }
 
-    /* Hintergrund - animierte Sterne */
     @keyframes starScroll {
         0% { background-position: 0 0; }
         100% { background-position: 0 2000px; }
@@ -31,7 +29,6 @@
         animation: starScroll 10s linear infinite;
     }
 
-    /* Startseite */
     #startScreen {
         text-align: center;
         color: #0ff;
@@ -44,7 +41,7 @@
     #highScore {
         font-size: 18px;
         color: #ff0;
-        margin-top: 30px; /* weiter unten unter den Buttons */
+        margin-top: 30px; 
     }
     #startButton, #announcementButton {
         background-color: #0f0;
@@ -72,14 +69,12 @@
         font-size: 14px;
     }
 
-    /* Spielfläche */
     #gameCanvas {
         background: rgba(0, 0, 0, 0.7);
         border: 2px solid #ffffff22;
         box-shadow: 0 0 15px #0ff;
     }
 
-    /* Text im Spiel */
     #score {
         position: absolute;
         top: 10px;
@@ -95,7 +90,6 @@
         color: #ff0;
     }
 
-    /* Spiel-Over Screen */
     #gameOver {
         display: none;
         position: absolute;
