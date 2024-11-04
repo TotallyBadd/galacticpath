@@ -7,7 +7,6 @@
 <link rel="icon" href="https://img.icons8.com/?size=80&id=oqrxoYQucToV&format=png" type="image/png">
 
 <style>
-    /* Allgemeines Styling */
     body, html {
         margin: 0;
         padding: 0;
@@ -21,7 +20,6 @@
         height: 100vh;
     }
 
-    /* Hintergrund - animierte Sterne */
     @keyframes starScroll {
         0% { background-position: 0 0; }
         100% { background-position: 0 2000px; }
@@ -29,6 +27,48 @@
     body {
         background: url('https://www.transparenttextures.com/patterns/stardust.png') repeat;
         animation: starScroll 10s linear infinite;
+    }
+
+    /* Startseite */
+    #startScreen {
+        text-align: center;
+    }
+    #title {
+        font-size: 50px;
+        margin-bottom: 20px;
+        color: #0ff;
+    }
+    #highScore {
+        font-size: 18px;
+        color: #ff0;
+    }
+    #startButton, #announcementButton {
+        background-color: #0f0;
+        border: none;
+        padding: 15px;
+        font-size: 18px;
+        cursor: pointer;
+        margin-top: 20px;
+        border-radius: 5px;
+        color: #000;
+    }
+    #announcementButton {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: #0ff;
+    }
+    #announcementBox {
+        display: none;
+        position: absolute;
+        top: 70px;
+        right: 20px;
+        background-color: rgba(0, 0, 0, 0.8);
+        padding: 10px;
+        color: #fff;
+        border-radius: 5px;
+        width: 200px;
+        font-size: 14px;
     }
 
     /* Spielfläche */
@@ -61,40 +101,78 @@
         padding: 20px;
         border-radius: 10px;
     }
+    #restartButton {
+        background-color: #0f0;
+        padding: 10px;
+        font-size: 18px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        color: #000;
+        margin-top: 20px;
+        transition: transform 0.2s;
+    }
+    #restartButton:hover {
+        transform: scale(1.1);
+    }
 </style>
 </head>
 <body>
 
-<div id="score">Score: 0</div>
-<div id="gameOver">Game Over!<br><button onclick="startGame()">Restart</button></div>
-<canvas id="gameCanvas" width="400" height="600"></canvas>
+<div id="startScreen">
+    <div id="title">Galactic Path</div>
+    <button id="startButton" onclick="startGame()">Start Game</button>
+    <div id="highScore">High Score: <span id="savedHighScore">0</span></div>
+</div>
+<div id="announcementButton" onclick="toggleAnnouncement()">Announcement</div>
+<div id="announcementBox">🚀 Galactic Path is now live! Good luck, pilots!</div>
+
+<div id="score" style="display:none;">Score: 0</div>
+<div id="gameOver">
+    Game Over!<br>
+    <button id="restartButton" onclick="startGame()">Restart</button>
+</div>
+<canvas id="gameCanvas" width="400" height="600" style="display:none;"></canvas>
 
 <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    let player, obstacles, score, gameOverScreen;
-    let isGameOver = false;
-    let speed = 2;
+    let player, obstacles, score, highScore = 0, isGameOver = false, speed = 2;
+    const savedHighScore = localStorage.getItem('highScore') || 0;
+    document.getElementById("savedHighScore").textContent = savedHighScore;
+
+    function toggleAnnouncement() {
+        const box = document.getElementById("announcementBox");
+        box.style.display = box.style.display === "none" ? "block" : "none";
+    }
 
     function startGame() {
-        player = { x: 180, y: 550, width: 20, height: 20 };
+        document.getElementById("startScreen").style.display = "none";
+        document.getElementById("gameCanvas").style.display = "block";
+        document.getElementById("score").style.display = "block";
+        document.getElementById("gameOver").style.display = "none";
+
+        player = { x: 200, y: 550, radius: 10 };
         obstacles = [];
         score = 0;
         isGameOver = false;
         speed = 2;
-        document.getElementById("gameOver").style.display = "none";
         requestAnimationFrame(updateGame);
     }
 
     function createObstacle() {
         const x = Math.floor(Math.random() * (canvas.width - 20));
-        obstacles.push({ x: x, y: 0, width: 20, height: 20 });
+        const direction = Math.random() > 0.5 ? 1 : -1;
+        obstacles.push({ x: x, y: 0, width: 20, height: 20, direction });
     }
 
     function drawPlayer() {
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
         ctx.fillStyle = "#0f0";
-        ctx.fillRect(player.x, player.y, player.width, player.height);
+        ctx.fill();
+        ctx.closePath();
     }
 
     function drawObstacles() {
@@ -102,31 +180,36 @@
         obstacles.forEach(obstacle => {
             ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
             obstacle.y += speed;
+            if (score >= 500) {
+                obstacle.x += obstacle.direction * 1.5; 
+                if (obstacle.x <= 0 || obstacle.x >= canvas.width - obstacle.width) obstacle.direction *= -1;
+            }
         });
     }
 
     function checkCollisions() {
         obstacles.forEach(obstacle => {
-            if (
-                player.x < obstacle.x + obstacle.width &&
-                player.x + player.width > obstacle.x &&
-                player.y < obstacle.y + obstacle.height &&
-                player.height + player.y > obstacle.y
-            ) {
-                isGameOver = true;
-            }
+            const dx = player.x - (obstacle.x + obstacle.width / 2);
+            const dy = player.y - (obstacle.y + obstacle.height / 2);
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < player.radius + obstacle.width / 2) isGameOver = true;
         });
     }
 
     function updateScore() {
-        score++;
-        document.getElementById("score").innerText = `Score: ${score}`;
-        if (score % 100 === 0) speed += 0.5;
+        if (isGameOver) return;
+        score += 0.1;
+        document.getElementById("score").innerText = `Score: ${Math.floor(score)}`;
+        if (Math.floor(score) % 100 === 0) speed += 0.2;
     }
 
     function updateGame() {
         if (isGameOver) {
             document.getElementById("gameOver").style.display = "block";
+            if (score > savedHighScore) {
+                localStorage.setItem('highScore', Math.floor(score));
+                document.getElementById("savedHighScore").textContent = Math.floor(score);
+            }
             return;
         }
 
@@ -136,15 +219,21 @@
         updateScore();
         checkCollisions();
 
-        if (Math.random() < 0.02) createObstacle();
+        if (Math.random() < 0.05) createObstacle();
 
         requestAnimationFrame(updateGame);
     }
 
     window.addEventListener("keydown", (e) => {
-        const step = 10;
-        if (e.key === "ArrowLeft" && player.x > 0) player.x -= step;
-        if (e.key === "ArrowRight" && player.x < canvas.width - player.width) player.x += step;
+        const step = 7;
+        if (e.key === "ArrowLeft" && player.x > player.radius) player.x -= step;
+        if (e.key === "ArrowRight" && player.x < canvas.width - player.radius) player.x += step;
+        if (isGameOver && e.key === " ") startGame();
+    });
+
+    canvas.addEventListener("touchmove", (e) => {
+        const touchX = e.touches[0].clientX - canvas.offsetLeft;
+        player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, touchX));
     });
 
     startGame();
