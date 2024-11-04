@@ -7,6 +7,7 @@
 <link rel="icon" href="https://img.icons8.com/?size=80&id=oqrxoYQucToV&format=png" type="image/png">
 
 <style>
+    /* Allgemeines Styling */
     body, html {
         margin: 0;
         padding: 0;
@@ -20,6 +21,7 @@
         height: 100vh;
     }
 
+    /* Hintergrund - animierte Sterne */
     @keyframes starScroll {
         0% { background-position: 0 0; }
         100% { background-position: 0 2000px; }
@@ -29,6 +31,7 @@
         animation: starScroll 10s linear infinite;
     }
 
+    /* Startseite */
     #startScreen {
         text-align: center;
         color: #0ff;
@@ -41,6 +44,7 @@
     #highScore {
         font-size: 18px;
         color: #ff0;
+        margin-top: 30px; /* weiter unten unter den Buttons */
     }
     #startButton, #announcementButton {
         background-color: #0f0;
@@ -91,6 +95,7 @@
         color: #ff0;
     }
 
+    /* Spiel-Over Screen */
     #gameOver {
         display: none;
         position: absolute;
@@ -154,7 +159,7 @@
     const ctx = canvas.getContext("2d");
 
     let player, obstacles, score, highScore = 0, isGameOver = false, speed = 2;
-    const savedHighScore = localStorage.getItem('highScore') || 0;
+    let savedHighScore = localStorage.getItem('highScore') || 0;
     document.getElementById("savedHighScore").textContent = savedHighScore;
 
     function toggleAnnouncement() {
@@ -205,7 +210,7 @@
             ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
             obstacle.y += speed;
             if (score >= 500) {
-                obstacle.x += obstacle.direction * 1.5; 
+                obstacle.x += obstacle.direction * 1.5;
                 if (obstacle.x <= 0 || obstacle.x >= canvas.width - obstacle.width) obstacle.direction *= -1;
             }
         });
@@ -232,8 +237,9 @@
         if (isGameOver) {
             document.getElementById("gameOver").style.display = "block";
             if (score > savedHighScore) {
-                localStorage.setItem('highScore', Math.floor(score));
-                document.getElementById("savedHighScore").textContent = Math.floor(score);
+                savedHighScore = Math.floor(score);
+                localStorage.setItem('highScore', savedHighScore);
+                document.getElementById("savedHighScore").textContent = savedHighScore;
             }
             return;
         }
@@ -245,7 +251,6 @@
         checkCollisions();
 
         if (Math.random() < 0.05) createObstacle();
-
         requestAnimationFrame(updateGame);
     }
 
@@ -260,6 +265,8 @@
         const touchX = e.touches[0].clientX - canvas.offsetLeft;
         player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, touchX));
     });
+
+    document.getElementById("displayedHighScore").textContent = savedHighScore;
 
     startGame();
 </script>
