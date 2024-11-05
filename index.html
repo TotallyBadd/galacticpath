@@ -7,19 +7,19 @@
 <link rel="icon" href="https://img.icons8.com/?size=80&id=oqrxoYQucToV&format=png" type="image/png">
 
 <style>
+    /* General and existing styles */
     body, html {
         margin: 0;
         padding: 0;
         overflow: hidden;
         background: #000;
         color: white;
-        font-family: Arial, sans-serif;
+        font-family: "Academy Engraved LET", Arial, sans-serif;
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
     }
-
     @keyframes starScroll {
         0% { background-position: 0 0; }
         100% { background-position: 0 2000px; }
@@ -28,7 +28,6 @@
         background: url('https://www.transparenttextures.com/patterns/stardust.png') repeat;
         animation: starScroll 10s linear infinite;
     }
-
     #startScreen {
         text-align: center;
         color: #0ff;
@@ -68,28 +67,55 @@
         width: 200px;
         font-size: 14px;
     }
-
+    #pauseScreen {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.8);
+        padding: 20px;
+        color: #fff;
+        border-radius: 10px;
+        text-align: center;
+    }
+    #pauseButton {
+        background-color: #f80;
+        padding: 10px;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+        color: #fff;
+        border-radius: 5px;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+    #discordIcon {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        cursor: pointer;
+    }
     #gameCanvas {
         background: rgba(0, 0, 0, 0.7);
         border: 2px solid #ffffff22;
         box-shadow: 0 0 15px #0ff;
     }
-
     #score {
         position: absolute;
         top: 10px;
-        left: 10px;
+        left: 60px;
         font-size: 20px;
         color: #0ff;
     }
     #highScoreDisplay {
         position: absolute;
         top: 40px;
-        left: 10px;
+        left: 60px;
         font-size: 16px;
         color: #ff0;
     }
-
     #gameOver {
         display: none;
         position: absolute;
@@ -137,7 +163,15 @@
     <button id="announcementButton" onclick="toggleAnnouncement()">Announcement</button>
     <div id="highScore">High Score: <span id="savedHighScore">0</span></div>
 </div>
+
 <div id="announcementBox">🚀 Galactic Path is now live! Good luck, pilots!</div>
+<img id="discordIcon" src="https://img.icons8.com/color/48/000000/discord-logo.png" alt="Discord Logo" title="Discord Link" onclick="alert('LINK_HERE');">
+
+<div id="pauseScreen">
+    <div>Game Paused</div>
+    <button onclick="resumeGame()">Continue</button>
+    <button onclick="backToHome()">Back to Home</button>
+</div>
 
 <div id="score" style="display:none;">Score: 0</div>
 <div id="highScoreDisplay" style="display:none;">High Score: <span id="displayedHighScore">0</span></div>
@@ -152,7 +186,7 @@
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    let player, obstacles, score, highScore = 0, isGameOver = false, speed = 2;
+    let player, obstacles, score, highScore = 0, isGameOver = false, speed = 2, isPaused = false;
     let savedHighScore = localStorage.getItem('highScore') || 0;
     document.getElementById("savedHighScore").textContent = savedHighScore;
 
@@ -172,6 +206,7 @@
         obstacles = [];
         score = 0;
         isGameOver = false;
+        isPaused = false;
         speed = 2;
         requestAnimationFrame(updateGame);
     }
@@ -182,6 +217,7 @@
         document.getElementById("score").style.display = "none";
         document.getElementById("highScoreDisplay").style.display = "none";
         document.getElementById("gameOver").style.display = "none";
+        document.getElementById("pauseScreen").style.display = "none";
     }
 
     function createObstacle() {
@@ -220,7 +256,7 @@
     }
 
     function updateScore() {
-        if (isGameOver) return;
+        if (isGameOver || isPaused) return;
         score += 0.1;
         document.getElementById("score").innerText = `Score: ${Math.floor(score)}`;
         document.getElementById("displayedHighScore").textContent = Math.max(savedHighScore, Math.floor(score));
@@ -228,15 +264,7 @@
     }
 
     function updateGame() {
-        if (isGameOver) {
-            document.getElementById("gameOver").style.display = "block";
-            if (score > savedHighScore) {
-                savedHighScore = Math.floor(score);
-                localStorage.setItem('highScore', savedHighScore);
-                document.getElementById("savedHighScore").textContent = savedHighScore;
-            }
-            return;
-        }
+        if (isPaused || isGameOver) return;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawPlayer();
@@ -248,10 +276,22 @@
         requestAnimationFrame(updateGame);
     }
 
+    function pauseGame() {
+        isPaused = true;
+        document.getElementById("pauseScreen").style.display = "block";
+    }
+
+    function resumeGame() {
+        isPaused = false;
+        document.getElementById("pauseScreen").style.display = "none";
+        requestAnimationFrame(updateGame);
+    }
+
     window.addEventListener("keydown", (e) => {
         const step = 7;
         if (e.key === "ArrowLeft" && player.x > player.radius) player.x -= step;
         if (e.key === "ArrowRight" && player.x < canvas.width - player.radius) player.x += step;
+        if (e.key === "Escape" && !isGameOver) pauseGame();
         if (isGameOver && e.key === " ") startGame();
     });
 
@@ -261,8 +301,6 @@
     });
 
     document.getElementById("displayedHighScore").textContent = savedHighScore;
-
-    startGame();
 </script>
 </body>
 </html>
