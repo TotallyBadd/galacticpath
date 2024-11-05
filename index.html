@@ -82,7 +82,7 @@
         font-size: 20px;
         color: #0ff;
     }
-    #highScoreDisplay {
+    #highScoreDisplay, #savedHighScoreDisplay {
         position: absolute;
         top: 40px;
         left: 10px;
@@ -154,7 +154,7 @@
     <div id="title">Galactic Path</div>
     <button id="startButton" onclick="startGame()">Start Game</button>
     <button id="announcementButton" onclick="toggleAnnouncement()">Announcement</button>
-    <div id="highScore">High Score: <span id="savedHighScore">0</span></div>
+    <div id="highScore">High Score: <span id="savedHighScoreDisplay">0</span></div>
 </div>
 <div id="announcementBox">🚀 Galactic Path is now live! Good luck, pilots!</div>
 
@@ -178,7 +178,7 @@
 
     let player, obstacles, score, highScore = 0, isGameOver = false, isPaused = false, speed = 2;
     let savedHighScore = localStorage.getItem('highScore') || 0;
-    document.getElementById("savedHighScore").textContent = savedHighScore;
+    document.getElementById("savedHighScoreDisplay").textContent = savedHighScore;
 
     function toggleAnnouncement() {
         const box = document.getElementById("announcementBox");
@@ -265,7 +265,7 @@
         drawObstacles();
         checkCollisions();
 
-        score += 10; // Increment by 10 per frame to get 10 points/second
+        score += 10; 
         document.getElementById("score").textContent = "Score: " + score;
         if (score > savedHighScore) {
             savedHighScore = score;
@@ -277,11 +277,38 @@
         requestAnimationFrame(updateGame);
     }
 
-    window.addEventListener("keydown", (e) => {
-        if (e.key === "ArrowLeft") player.x -= 20;
-        if (e.key === "ArrowRight") player.x += 20;
-        if (e.key === "Escape") togglePause();
-    });
+    window.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft" && player.x - player.radius > 0) {
+        player.x -= 15; 
+    } else if (event.key === "ArrowRight" && player.x + player.radius < canvas.width) {
+        player.x += 15; 
+    } else if (event.key === "p") {
+        togglePause(); 
+    }
+});
+
+function updateHighScore() {
+    highScore = Math.max(score, highScore);
+    localStorage.setItem("highScore", highScore);
+}
+
+window.addEventListener("load", () => {
+    const storedHighScore = localStorage.getItem("highScore");
+    if (storedHighScore) {
+        highScore = parseInt(storedHighScore);
+        document.getElementById("savedHighScoreDisplay").textContent = highScore;
+    }
+});
+
+window.addEventListener("resize", () => {
+    canvas.width = Math.min(window.innerWidth, 400);
+    canvas.height = Math.min(window.innerHeight, 600);
+    player.x = canvas.width / 2;
+});
+
+document.getElementById("startButton").addEventListener("click", () => startGame());
+
+document.getElementById("announcementButton").addEventListener("click", toggleAnnouncement);
 </script>
 </body>
 </html>
