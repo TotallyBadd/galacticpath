@@ -128,7 +128,6 @@
         margin-top: 10px;
     }
     
-    /* New Level Progress Bar Styles */
     #levelContainer {
         margin-top: 15px;
         display: flex;
@@ -171,7 +170,7 @@
         </div>
     </div>
 </div>
-<div id="announcementBox">🚀 Galactic Path is now live! Good luck, pilots!<br> Space Ranger has finally been released on the 04.11.2024 by Totally_Bad. You can play the BETA now and stay updated for more future changes.</div>
+<div id="announcementBox">🚀 Galactic Path is now live! Good luck, pilots!<br> Galactic Path has finally been released on the 04.11.2024 by Totally_Bad. You can play the BETA now and stay updated for more future changes.</div>
 
 <div id="score" style="display:none;">Score: 0</div>
 <div id="highScoreDisplay" style="display:none;">High Score: <span id="displayedHighScore">0</span></div>
@@ -193,8 +192,8 @@
     // Leveling system
     let currentLevel = 1;
     let currentEXP = 0;
-    const expPerScore = 15 / 500;  // 15 EXP per 500 Score
-    const levelRequirement = level => 20 * Math.pow(1.5, level - 1); // Level requirements increase progressively
+    const expPerScore = 15 / 500;  
+    const levelRequirement = level => 20 * Math.pow(1.5, level - 1); 
 
     function updateEXP() {
         currentEXP += score * expPerScore;
