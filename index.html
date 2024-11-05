@@ -261,26 +261,6 @@
         });
     }
 
-function updateGame() {
-    if (isGameOver) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawPlayer();
-    drawObstacles();
-    drawPowerUps(); 
-
-    score++;
-    document.getElementById("score").textContent = "Score: " + score;
-    document.getElementById("displayedHighScore").textContent = highScore;
-    if (score % 50 === 0) speed += 0.1;
-    updateEXP();
-
-    if (Math.random() < powerUpChance) createPowerUp();
-
-    if (Math.random() < 0.02) createObstacle();
-    requestAnimationFrame(updateGame);
-}
-
     function gameOver() {
         isGameOver = true;
         if (score > highScore) {
