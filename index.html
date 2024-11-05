@@ -119,19 +119,6 @@
         background-color: #00f;
     }
 
-    #pauseButton {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background-color: #0ff;
-        border: none;
-        padding: 10px;
-        font-size: 18px;
-        cursor: pointer;
-        border-radius: 5px;
-        color: #000;
-    }
-
     #gameOver {
         display: none;
         position: absolute;
@@ -184,15 +171,17 @@
     <button onclick="togglePause()">Continue</button>
     <button onclick="backToHome()">Back to Home</button>
 </div>
-<button id="pauseButton" onclick="togglePause()" style="display: none;">||</button>
 
 <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    let player, obstacles, score, highScore = 0, isGameOver = false, isPaused = false, speed = 2;
+    let player, obstacles, score = 0, highScore = 0, isGameOver = false, isPaused = false, speed = 2;
     let savedHighScore = localStorage.getItem('highScore') || 0;
     document.getElementById("savedHighScore").textContent = savedHighScore;
+    
+    let touchStartX = 0;
+    let touchEndX = 0;
 
     function toggleAnnouncement() {
         const box = document.getElementById("announcementBox");
@@ -204,7 +193,6 @@
         document.getElementById("gameCanvas").style.display = "block";
         document.getElementById("score").style.display = "block";
         document.getElementById("highScoreDisplay").style.display = "block";
-        document.getElementById("pauseButton").style.display = "block";
         document.getElementById("gameOver").style.display = "none";
         document.getElementById("pauseMenu").style.display = "none";
         
@@ -224,7 +212,6 @@
         document.getElementById("highScoreDisplay").style.display = "none";
         document.getElementById("gameOver").style.display = "none";
         document.getElementById("pauseMenu").style.display = "none";
-        document.getElementById("pauseButton").style.display = "none";
         isPaused = false;
     }
 
@@ -237,45 +224,41 @@
     function createObstacle() {
         const x = Math.floor(Math.random() * (canvas.width - 20));
         const direction = Math.random() > 0.5 ? 1 : -1;
-        obstacles.push({ x: x, y: 0, width: 40, height: 20, dx: direction * 2 });
+        obstacles.push({ x: x, y: 0, width: 20, height: 20, dx: direction * 2 });
     }
 
     function updateScore() {
-        if (!isPaused && !isGameOver) score += 100;
+        if (!isPaused && !isGameOver) score += 1;
     }
-    setInterval(updateScore, 10000);
+    setInterval(updateScore, 100);
 
     function updateGame() {
         if (isPaused || isGameOver) return;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        ctx.fillStyle = "cyan";
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "white";
         ctx.beginPath();
         ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
         ctx.fill();
 
-        if (obstacles.length < 5) createObstacle();
-
-        for (let i = obstacles.length - 1; i >= 0; i--) {
-            const obstacle = obstacles[i];
-            obstacle.y += speed;
-            obstacle.x += obstacle.dx;
-
+        obstacles.forEach((obs, index) => {
             ctx.fillStyle = "red";
-            ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+            obs.y += speed;
+            if (score >= 250) obs.x += obs.dx;
+            
+            if (obs.y > canvas.height) obstacles.splice(index, 1);
 
-            if (obstacle.y > canvas.height) obstacles.splice(i, 1);
+            const dx = player.x - (obs.x + obs.width / 2);
+            const dy = player.y - (obs.y + obs.height / 2);
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < player.radius + obs.width / 2) gameOver();
+        });
 
-            const dx = player.x - Math.max(obstacle.x, Math.min(player.x, obstacle.x + obstacle.width));
-            const dy = player.y - Math.max(obstacle.y, Math.min(player.y, obstacle.y + obstacle.height));
-            if ((dx * dx + dy * dy) < (player.radius * player.radius)) {
-                gameOver();
-                return;
-            }
-        }
-
-        if (player.x - player.radius < 0 || player.x + player.radius > canvas.width) gameOver();
+        if (score % 100 === 0) speed += 0.1;
+        if (score % 50 === 0) createObstacle();
 
         document.getElementById("score").textContent = "Score: " + score;
         document.getElementById("displayedHighScore").textContent = highScore;
@@ -287,15 +270,27 @@
         isGameOver = true;
         document.getElementById("gameOver").style.display = "block";
         highScore = Math.max(score, savedHighScore);
-        localStorage.setItem("highScore", highScore);
+        localStorage.setItem('highScore', highScore);
         document.getElementById("savedHighScore").textContent = highScore;
     }
 
-    window.addEventListener("keydown", (e) => {
-        if (e.key === "ArrowLeft" && player.x - player.radius > 0) player.x -= 15;
-        else if (e.key === "ArrowRight" && player.x + player.radius < canvas.width) player.x += 15;
+    function movePlayer(direction) {
+        player.x += direction * 20;
+        player.x = Math.max(player.radius, Math.min(player.x, canvas.width - player.radius));
+    }
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") movePlayer(-1);
+        if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") movePlayer(1);
+        if (e.key === "Escape") togglePause();
     });
 
+    canvas.addEventListener("touchstart", (e) => touchStartX = e.changedTouches[0].screenX);
+    canvas.addEventListener("touchmove", (e) => touchEndX = e.changedTouches[0].screenX);
+    canvas.addEventListener("touchend", () => {
+        if (touchEndX < touchStartX) movePlayer(-1);
+        if (touchEndX > touchStartX) movePlayer(1);
+    });
 </script>
 </body>
 </html>
