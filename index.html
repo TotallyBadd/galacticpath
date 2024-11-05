@@ -189,7 +189,7 @@ function startGame() {
     isGameOver = false;
     isPaused = false;
     speed = 2;
-    setTimeout(() => { generateObstacles(); }, 2000); // delay for 2 seconds
+    setTimeout(() => { generateObstacles(); }, 2000); 
     requestAnimationFrame(updateGame);
 }
 
@@ -220,7 +220,7 @@ function generateObstacles() {
         if (!isPaused && !isGameOver && obstacles.length < 10) {
             createObstacle();
         }
-    }, 500); // adjust frequency as needed for balance
+    }, 500); 
 }
 
 function updateScore() {
@@ -241,7 +241,7 @@ function updateGame() {
         ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
         obs.y += speed;
         obs.x += obs.dx;
-        if (obs.y > canvas.height) obstacles.splice(index, 1); // remove if off-screen
+        if (obs.y > canvas.height) obstacles.splice(index, 1); 
         if (Math.hypot(player.x - obs.x, player.y - obs.y) < player.radius) {
             isGameOver = true;
             document.getElementById("gameOver").style.display = "block";
