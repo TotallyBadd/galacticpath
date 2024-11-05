@@ -82,7 +82,7 @@
         font-size: 20px;
         color: #0ff;
     }
-    #highScoreDisplay, #savedHighScoreDisplay {
+    #highScoreDisplay {
         position: absolute;
         top: 40px;
         left: 10px;
@@ -117,6 +117,19 @@
     }
     #pauseMenu button:hover {
         background-color: #00f;
+    }
+
+    #pauseButton {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: #0ff;
+        border: none;
+        padding: 10px;
+        font-size: 18px;
+        cursor: pointer;
+        border-radius: 5px;
+        color: #000;
     }
 
     #gameOver {
@@ -154,7 +167,7 @@
     <div id="title">Galactic Path</div>
     <button id="startButton" onclick="startGame()">Start Game</button>
     <button id="announcementButton" onclick="toggleAnnouncement()">Announcement</button>
-    <div id="highScore">High Score: <span id="savedHighScoreDisplay">0</span></div>
+    <div id="highScore">High Score: <span id="savedHighScore">0</span></div>
 </div>
 <div id="announcementBox">🚀 Galactic Path is now live! Good luck, pilots!</div>
 
@@ -171,6 +184,7 @@
     <button onclick="togglePause()">Continue</button>
     <button onclick="backToHome()">Back to Home</button>
 </div>
+<button id="pauseButton" onclick="togglePause()" style="display: none;">||</button>
 
 <script>
     const canvas = document.getElementById("gameCanvas");
@@ -178,7 +192,7 @@
 
     let player, obstacles, score, highScore = 0, isGameOver = false, isPaused = false, speed = 2;
     let savedHighScore = localStorage.getItem('highScore') || 0;
-    document.getElementById("savedHighScoreDisplay").textContent = savedHighScore;
+    document.getElementById("savedHighScore").textContent = savedHighScore;
 
     function toggleAnnouncement() {
         const box = document.getElementById("announcementBox");
@@ -190,6 +204,7 @@
         document.getElementById("gameCanvas").style.display = "block";
         document.getElementById("score").style.display = "block";
         document.getElementById("highScoreDisplay").style.display = "block";
+        document.getElementById("pauseButton").style.display = "block";
         document.getElementById("gameOver").style.display = "none";
         document.getElementById("pauseMenu").style.display = "none";
         
@@ -209,6 +224,7 @@
         document.getElementById("highScoreDisplay").style.display = "none";
         document.getElementById("gameOver").style.display = "none";
         document.getElementById("pauseMenu").style.display = "none";
+        document.getElementById("pauseButton").style.display = "none";
         isPaused = false;
     }
 
@@ -221,94 +237,65 @@
     function createObstacle() {
         const x = Math.floor(Math.random() * (canvas.width - 20));
         const direction = Math.random() > 0.5 ? 1 : -1;
-        obstacles.push({ x: x, y: 0, width: 20, height: 20, direction });
+        obstacles.push({ x: x, y: 0, width: 40, height: 20, dx: direction * 2 });
     }
 
-    function drawPlayer() {
-        ctx.beginPath();
-        ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-        ctx.fillStyle = "#0f0";
-        ctx.fill();
-        ctx.closePath();
+    function updateScore() {
+        if (!isPaused && !isGameOver) score += 100;
     }
-
-    function drawObstacles() {
-        ctx.fillStyle = "#f00";
-        obstacles.forEach(obstacle => {
-            ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-            obstacle.y += speed;
-
-            if (score >= 250) {
-                obstacle.x += obstacle.direction * 0.5;
-                if (obstacle.x <= 0 || obstacle.x + obstacle.width >= canvas.width) obstacle.direction *= -1;
-            }
-        });
-    }
-
-    function checkCollisions() {
-        obstacles.forEach(obstacle => {
-            if (player.x < obstacle.x + obstacle.width &&
-                player.x + player.radius * 2 > obstacle.x &&
-                player.y < obstacle.y + obstacle.height &&
-                player.y + player.radius * 2 > obstacle.y) {
-                isGameOver = true;
-                document.getElementById("gameOver").style.display = "block";
-            }
-        });
-    }
+    setInterval(updateScore, 10000);
 
     function updateGame() {
         if (isPaused || isGameOver) return;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawPlayer();
-        drawObstacles();
-        checkCollisions();
+        
+        ctx.fillStyle = "cyan";
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+        ctx.fill();
 
-        score += 10; 
-        document.getElementById("score").textContent = "Score: " + score;
-        if (score > savedHighScore) {
-            savedHighScore = score;
-            localStorage.setItem('highScore', savedHighScore);
+        if (obstacles.length < 5) createObstacle();
+
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+            const obstacle = obstacles[i];
+            obstacle.y += speed;
+            obstacle.x += obstacle.dx;
+
+            ctx.fillStyle = "red";
+            ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+
+            if (obstacle.y > canvas.height) obstacles.splice(i, 1);
+
+            const dx = player.x - Math.max(obstacle.x, Math.min(player.x, obstacle.x + obstacle.width));
+            const dy = player.y - Math.max(obstacle.y, Math.min(player.y, obstacle.y + obstacle.height));
+            if ((dx * dx + dy * dy) < (player.radius * player.radius)) {
+                gameOver();
+                return;
+            }
         }
-        document.getElementById("displayedHighScore").textContent = savedHighScore;
 
-        if (Math.random() < 0.02) createObstacle();
+        if (player.x - player.radius < 0 || player.x + player.radius > canvas.width) gameOver();
+
+        document.getElementById("score").textContent = "Score: " + score;
+        document.getElementById("displayedHighScore").textContent = highScore;
+
         requestAnimationFrame(updateGame);
     }
 
-    window.addEventListener("keydown", (event) => {
-    if (event.key === "ArrowLeft" && player.x - player.radius > 0) {
-        player.x -= 15; 
-    } else if (event.key === "ArrowRight" && player.x + player.radius < canvas.width) {
-        player.x += 15; 
-    } else if (event.key === "p") {
-        togglePause(); 
+    function gameOver() {
+        isGameOver = true;
+        document.getElementById("gameOver").style.display = "block";
+        highScore = Math.max(score, savedHighScore);
+        localStorage.setItem("highScore", highScore);
+        document.getElementById("savedHighScore").textContent = highScore;
     }
-});
 
-function updateHighScore() {
-    highScore = Math.max(score, highScore);
-    localStorage.setItem("highScore", highScore);
-}
+    window.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft" && player.x - player.radius > 0) player.x -= 15;
+        else if (e.key === "ArrowRight" && player.x + player.radius < canvas.width) player.x += 15;
+    });
 
-window.addEventListener("load", () => {
-    const storedHighScore = localStorage.getItem("highScore");
-    if (storedHighScore) {
-        highScore = parseInt(storedHighScore);
-        document.getElementById("savedHighScoreDisplay").textContent = highScore;
-    }
-});
-
-window.addEventListener("resize", () => {
-    canvas.width = Math.min(window.innerWidth, 400);
-    canvas.height = Math.min(window.innerHeight, 600);
-    player.x = canvas.width / 2;
-});
-
-document.getElementById("startButton").addEventListener("click", () => startGame());
-
-document.getElementById("announcementButton").addEventListener("click", toggleAnnouncement);
 </script>
 </body>
 </html>
