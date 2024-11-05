@@ -7,152 +7,139 @@
 <link rel="icon" href="https://img.icons8.com/?size=80&id=oqrxoYQucToV&format=png" type="image/png">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 <style>
-    body, html {
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        background: #000;
-        color: white;
-        font-family: "Orbitron", sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    }
-    @keyframes starScroll {
-        0% { background-position: 0 0; }
-        100% { background-position: 0 2000px; }
-    }
-    body {
-        background: url('https://www.transparenttextures.com/patterns/stardust.png') repeat;
-        animation: starScroll 10s linear infinite;
-    }
-    #startScreen {
-        text-align: center;
-        color: #0ff;
-    }
-    #title {
-        font-size: 50px;
-        margin-bottom: 20px;
-        color: #0ff;
-    }
-    #highScore {
-        font-size: 18px;
-        color: #ff0;
-        margin-top: 30px;
-    }
-    #startButton, #announcementButton {
-        background-color: #0f0;
-        border: none;
-        padding: 15px;
-        font-size: 18px;
-        cursor: pointer;
-        margin-top: 20px;
-        border-radius: 5px;
-        color: #000;
-    }
-    #announcementButton {
-        background-color: #0ff;
-    }
-    #announcementBox {
-        display: none;
-        position: absolute;
-        top: 70px;
-        right: 20px;
-        background-color: rgba(0, 0, 0, 0.8);
-        padding: 10px;
-        color: #fff;
-        border-radius: 5px;
-        width: 200px;
-        font-size: 14px;
-    }
-    #gameCanvas {
-        background: rgba(0, 0, 0, 0.7);
-        border: 2px solid #ffffff22;
-        box-shadow: 0 0 15px #0ff;
-    }
-    #score {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        font-size: 20px;
-        color: #0ff;
-    }
-    #highScoreDisplay {
-        position: absolute;
-        top: 40px;
-        left: 10px;
-        font-size: 16px;
-        color: #ff0;
-    }
-    #pauseButton {
-        display: none;
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background-color: #0ff;
-        color: #000;
-        border: none;
-        padding: 10px;
-        font-size: 18px;
-        cursor: pointer;
-        border-radius: 5px;
-    }
-    #pauseMenu {
-        display: none;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-        color: #fff;
-        background-color: rgba(0, 0, 0, 0.9);
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 0 15px #0ff;
-        font-size: 20px;
-    }
-    #pauseMenu button {
-        background-color: #0ff;
-        color: #000;
-        border: none;
-        padding: 10px;
-        margin-top: 15px;
-        font-size: 18px;
-        cursor: pointer;
-        border-radius: 5px;
-        width: 100%;
-    }
-    #pauseMenu button:hover {
-        background-color: #00f;
-    }
-    #gameOver {
-        display: none;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 32px;
-        text-align: center;
-        color: #f00;
-        background-color: rgba(0, 0, 0, 0.85);
-        padding: 25px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px #f00;
-    }
-    #gameOver button {
-        background-color: #ff0;
-        color: #000;
-        border: none;
-        padding: 10px;
-        font-size: 20px;
-        cursor: pointer;
-        margin-top: 15px;
-        border-radius: 5px;
-    }
-    #gameOver button:hover {
-        background-color: #ff8c00;
-    }
+body, html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #000;
+    color: white;
+    font-family: "Orbitron", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+@keyframes starScroll {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 2000px; }
+}
+body {
+    background: url('https://www.transparenttextures.com/patterns/stardust.png') repeat;
+    animation: starScroll 10s linear infinite;
+}
+#startScreen {
+    text-align: center;
+    color: #0ff;
+}
+#title {
+    font-size: 50px;
+    margin-bottom: 20px;
+    color: #0ff;
+}
+#highScore {
+    font-size: 18px;
+    color: #ff0;
+    margin-top: 30px;
+}
+#startButton, #announcementButton {
+    background-color: #0f0;
+    border: none;
+    padding: 15px;
+    font-size: 18px;
+    cursor: pointer;
+    margin-top: 20px;
+    border-radius: 5px;
+    color: #000;
+}
+#announcementButton {
+    background-color: #0ff;
+}
+#announcementBox {
+    display: none;
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 10px;
+    color: #fff;
+    border-radius: 5px;
+    width: 200px;
+    font-size: 14px;
+}
+#gameCanvas {
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #ffffff22;
+    box-shadow: 0 0 15px #0ff;
+}
+#score {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 20px;
+    color: #0ff;
+}
+#highScoreDisplay {
+    position: absolute;
+    top: 40px;
+    left: 10px;
+    font-size: 16px;
+    color: #ff0;
+}
+#pauseMenu {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px #0ff;
+    font-size: 20px;
+}
+#pauseMenu button {
+    background-color: #0ff;
+    color: #000;
+    border: none;
+    padding: 10px;
+    margin-top: 15px;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 5px;
+    width: 100%;
+}
+#pauseMenu button:hover {
+    background-color: #00f;
+}
+#gameOver {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 32px;
+    text-align: center;
+    color: #f00;
+    background-color: rgba(0, 0, 0, 0.85);
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #f00;
+}
+#gameOver button {
+    background-color: #ff0;
+    color: #000;
+    border: none;
+    padding: 10px;
+    font-size: 20px;
+    cursor: pointer;
+    margin-top: 15px;
+    border-radius: 5px;
+}
+#gameOver button:hover {
+    background-color: #ff8c00;
+}
 </style>
 </head>
 <body>
@@ -170,7 +157,6 @@
     <button onclick="startGame()">Restart</button>
 </div>
 <canvas id="gameCanvas" width="400" height="600" style="display:none;"></canvas>
-<button id="pauseButton" onclick="togglePause()">Pause</button>
 <div id="pauseMenu">
     <div>Paused</div>
     <button onclick="togglePause()">Continue</button>
@@ -196,13 +182,14 @@ function startGame() {
     document.getElementById("score").style.display = "block";
     document.getElementById("highScoreDisplay").style.display = "block";
     document.getElementById("gameOver").style.display = "none";
-    document.getElementById("pauseButton").style.display = "block";
+    document.getElementById("pauseMenu").style.display = "none";
     player = { x: 200, y: 550, radius: 10 };
     obstacles = [];
     score = 0;
     isGameOver = false;
     isPaused = false;
     speed = 2;
+    setTimeout(() => { generateObstacles(); }, 2000); // delay for 2 seconds
     requestAnimationFrame(updateGame);
 }
 
@@ -212,7 +199,7 @@ function backToHome() {
     document.getElementById("score").style.display = "none";
     document.getElementById("highScoreDisplay").style.display = "none";
     document.getElementById("gameOver").style.display = "none";
-    document.getElementById("pauseButton").style.display = "none";
+    document.getElementById("pauseMenu").style.display = "none";
     isPaused = false;
 }
 
@@ -224,15 +211,21 @@ function togglePause() {
 
 function createObstacle() {
     const x = Math.floor(Math.random() * (canvas.width - 20));
-    const y = Math.random() * (canvas.height - 100);
     const direction = Math.random() > 0.5 ? 1 : -1;
-    obstacles.push({ x: x, y: y, width: 20, height: 20, dx: direction * 2 });
+    obstacles.push({ x: x, y: -30, width: 20, height: 20, dx: direction * 2 });
+}
+
+function generateObstacles() {
+    setInterval(() => {
+        if (!isPaused && !isGameOver && obstacles.length < 10) {
+            createObstacle();
+        }
+    }, 500); // adjust frequency as needed for balance
 }
 
 function updateScore() {
     if (!isPaused && !isGameOver) score += 1;
 }
-
 setInterval(updateScore, 100);
 
 function updateGame() {
@@ -247,48 +240,40 @@ function updateGame() {
         ctx.fillStyle = "red";
         ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
         obs.y += speed;
-        if (score >= 250) obs.x += obs.dx;
-        if (obs.y > canvas.height) obstacles.splice(index, 1);
-
-        const dx = player.x - (obs.x + obs.width / 2);
-        const dy = player.y - (obs.y + obs.height / 2);
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        if (distance < player.radius + obs.width / 2) gameOver();
+        obs.x += obs.dx;
+        if (obs.y > canvas.height) obstacles.splice(index, 1); // remove if off-screen
+        if (Math.hypot(player.x - obs.x, player.y - obs.y) < player.radius) {
+            isGameOver = true;
+            document.getElementById("gameOver").style.display = "block";
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('highScore', highScore);
+            }
+        }
     });
-
-    if (score % 100 === 0) speed += 0.1;
-    if (score % 50 === 0) createObstacle();
     
-    document.getElementById("score").textContent = "Score: " + score;
-    document.getElementById("displayedHighScore").textContent = highScore;
-    requestAnimationFrame(updateGame);
+    if (!isGameOver) requestAnimationFrame(updateGame);
+
+    ctx.fillStyle = "#0ff";
+    ctx.font = "20px Orbitron";
+    ctx.fillText("Score: " + score, 10, 30);
+    ctx.fillText("High Score: " + (savedHighScore > highScore ? savedHighScore : highScore), 10, 60);
 }
 
-function gameOver() {
-    isGameOver = true;
-    document.getElementById("gameOver").style.display = "block";
-    document.getElementById("pauseButton").style.display = "none";
-    highScore = Math.max(score, savedHighScore);
-    localStorage.setItem('highScore', highScore);
-    document.getElementById("savedHighScore").textContent = highScore;
-}
-
-function movePlayer(direction) {
-    player.x += direction * 20;
-    player.x = Math.max(player.radius, Math.min(player.x, canvas.width - player.radius));
-}
-
-document.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") movePlayer(-1);
-    if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") movePlayer(1);
-    if (e.key === "Escape") togglePause();
+document.addEventListener("keydown", function (event) {
+    if (event.key === "ArrowLeft" && player.x > player.radius) player.x -= 10;
+    if (event.key === "ArrowRight" && player.x < canvas.width - player.radius) player.x += 10;
+    if (event.key === "p") togglePause();
 });
 
-canvas.addEventListener("touchstart", (e) => touchStartX = e.changedTouches[0].screenX);
-canvas.addEventListener("touchmove", (e) => touchEndX = e.changedTouches[0].screenX);
-canvas.addEventListener("touchend", () => {
-    if (touchEndX < touchStartX) movePlayer(-1);
-    if (touchEndX > touchStartX) movePlayer(1);
+document.addEventListener("touchstart", function (event) {
+    touchStartX = event.touches[0].clientX;
+});
+
+document.addEventListener("touchend", function (event) {
+    touchEndX = event.changedTouches[0].clientX;
+    const dx = touchEndX - touchStartX;
+    if (Math.abs(dx) > 30) player.x += dx > 0 ? 10 : -10;
 });
 </script>
 </body>
