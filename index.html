@@ -71,16 +71,6 @@
         font-size: 14px;
     }
 
-    /* Discord icon */
-    #discordIcon {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        font-size: 24px;
-        color: #7289da;
-        cursor: pointer;
-    }
-
     /* Game canvas */
     #gameCanvas {
         background: rgba(0, 0, 0, 0.7);
@@ -141,12 +131,26 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        font-size: 36px;
+        font-size: 32px;
         text-align: center;
         color: #f00;
-        background-color: rgba(0, 0, 0, 0.7);
-        padding: 20px;
+        background-color: rgba(0, 0, 0, 0.85);
+        padding: 25px;
         border-radius: 10px;
+        box-shadow: 0 0 10px #f00;
+    }
+    #gameOver button {
+        background-color: #ff0;
+        color: #000;
+        border: none;
+        padding: 10px;
+        font-size: 20px;
+        cursor: pointer;
+        margin-top: 15px;
+        border-radius: 5px;
+    }
+    #gameOver button:hover {
+        background-color: #ff8c00;
     }
 </style>
 </head>
@@ -157,7 +161,6 @@
     <button id="startButton" onclick="startGame()">Start Game</button>
     <button id="announcementButton" onclick="toggleAnnouncement()">Announcement</button>
     <div id="highScore">High Score: <span id="savedHighScore">0</span></div>
-    <div id="discordIcon">Discord (LINK_HERE)</div>
 </div>
 <div id="announcementBox">🚀 Galactic Path is now live! Good luck, pilots!</div>
 
@@ -211,6 +214,8 @@
         document.getElementById("score").style.display = "none";
         document.getElementById("highScoreDisplay").style.display = "none";
         document.getElementById("gameOver").style.display = "none";
+        document.getElementById("pauseMenu").style.display = "none";
+        isPaused = false;
     }
 
     function togglePause() {
@@ -240,8 +245,8 @@
             obstacle.y += speed;
 
             if (score >= 250) {
-                obstacle.x += obstacle.direction * 1.5;
-                if (obstacle.x <= 0 || obstacle.x >= canvas.width - obstacle.width) obstacle.direction *= -1;
+                obstacle.x += obstacle.direction * 0.5;
+                if (obstacle.x <= 0 || obstacle.x + obstacle.width >= canvas.width) obstacle.direction *= -1;
             }
         });
     }
@@ -266,7 +271,7 @@
         drawObstacles();
         checkCollisions();
 
-        score++;
+        score += 10; // Increment by 10 per frame to get 10 points/second
         document.getElementById("score").textContent = "Score: " + score;
         if (score > savedHighScore) {
             savedHighScore = score;
