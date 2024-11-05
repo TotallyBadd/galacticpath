@@ -7,7 +7,7 @@
 <link rel="icon" href="https://img.icons8.com/?size=80&id=oqrxoYQucToV&format=png" type="image/png">
 
 <style>
-    /* General and existing styles */
+    /* General styles */
     body, html {
         margin: 0;
         padding: 0;
@@ -40,7 +40,7 @@
     #highScore {
         font-size: 18px;
         color: #ff0;
-        margin-top: 30px; 
+        margin-top: 30px;
     }
     #startButton, #announcementButton {
         background-color: #0f0;
@@ -90,11 +90,12 @@
         position: absolute;
         top: 10px;
         right: 10px;
+        display: none; /* Only visible in-game */
     }
     #discordIcon {
         position: absolute;
         top: 10px;
-        left: 10px;
+        right: 10px;
         cursor: pointer;
     }
     #gameCanvas {
@@ -105,16 +106,18 @@
     #score {
         position: absolute;
         top: 10px;
-        left: 60px;
+        left: 10px;
         font-size: 20px;
         color: #0ff;
+        display: none; /* Only visible in-game */
     }
     #highScoreDisplay {
         position: absolute;
         top: 40px;
-        left: 60px;
+        left: 10px;
         font-size: 16px;
         color: #ff0;
+        display: none; /* Only visible in-game */
     }
     #gameOver {
         display: none;
@@ -162,10 +165,10 @@
     <button id="startButton" onclick="startGame()">Start Game</button>
     <button id="announcementButton" onclick="toggleAnnouncement()">Announcement</button>
     <div id="highScore">High Score: <span id="savedHighScore">0</span></div>
+    <img id="discordIcon" src="https://img.icons8.com/color/48/000000/discord-logo.png" alt="Discord Logo" title="Discord Link" onclick="alert('LINK_HERE');">
 </div>
 
 <div id="announcementBox">🚀 Galactic Path is now live! Good luck, pilots!</div>
-<img id="discordIcon" src="https://img.icons8.com/color/48/000000/discord-logo.png" alt="Discord Logo" title="Discord Link" onclick="alert('LINK_HERE');">
 
 <div id="pauseScreen">
     <div>Game Paused</div>
@@ -173,13 +176,14 @@
     <button onclick="backToHome()">Back to Home</button>
 </div>
 
-<div id="score" style="display:none;">Score: 0</div>
-<div id="highScoreDisplay" style="display:none;">High Score: <span id="displayedHighScore">0</span></div>
+<div id="score">Score: 0</div>
+<div id="highScoreDisplay">High Score: <span id="displayedHighScore">0</span></div>
 <div id="gameOver">
     Game Over!<br>
     <button id="restartButton" onclick="startGame()">Restart</button>
     <button id="backToHomeButton" onclick="backToHome()">Back to Home</button>
 </div>
+<button id="pauseButton" onclick="pauseGame()">Pause</button>
 <canvas id="gameCanvas" width="400" height="600" style="display:none;"></canvas>
 
 <script>
@@ -201,6 +205,7 @@
         document.getElementById("score").style.display = "block";
         document.getElementById("highScoreDisplay").style.display = "block";
         document.getElementById("gameOver").style.display = "none";
+        document.getElementById("pauseButton").style.display = "block";
 
         player = { x: 200, y: 550, radius: 10 };
         obstacles = [];
@@ -217,7 +222,7 @@
         document.getElementById("score").style.display = "none";
         document.getElementById("highScoreDisplay").style.display = "none";
         document.getElementById("gameOver").style.display = "none";
-        document.getElementById("pauseScreen").style.display = "none";
+        document.getElementById("pauseButton").style.display = "none";
     }
 
     function createObstacle() {
@@ -235,13 +240,14 @@
     }
 
     function drawObstacles() {
-        ctx.fillStyle = "#f00";
         obstacles.forEach(obstacle => {
+            ctx.fillStyle = "#f00";
             ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
             obstacle.y += speed;
-            if (score >= 500) {
-                obstacle.x += obstacle.direction * 1.5;
-                if (obstacle.x <= 0 || obstacle.x >= canvas.width - obstacle.width) obstacle.direction *= -1;
+            obstacle.x += obstacle.direction * 0.5;
+
+            if (obstacle.x <= 0 || obstacle.x >= canvas.width - obstacle.width) {
+                obstacle.direction *= -1;
             }
         });
     }
@@ -251,8 +257,20 @@
             const dx = player.x - (obstacle.x + obstacle.width / 2);
             const dy = player.y - (obstacle.y + obstacle.height / 2);
             const distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance < player.radius + obstacle.width / 2) isGameOver = true;
+            if (distance < player.radius + obstacle.width / 2) {
+                isGameOver = true;
+                showGameOverScreen();
+            }
         });
+    }
+
+    function showGameOverScreen() {
+        document.getElementById("gameOver").style.display = "block";
+        document.getElementById("pauseButton").style.display = "none";
+        if (score > savedHighScore) {
+            savedHighScore = Math.floor(score);
+            localStorage.setItem('highScore', savedHighScore);
+        }
     }
 
     function updateScore() {
