@@ -261,6 +261,64 @@
         });
     }
 
+    let powerUps = [];
+const powerUpChance = 0.10; 
+const powerUpTypes = ["shield", "scoreBoost", "slowDown"];
+const powerUpDuration = 5000; 
+
+function createPowerUp() {
+    const x = Math.floor(Math.random() * (canvas.width - 20));
+    const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
+    powerUps.push({ x, y: 0, width: 20, height: 20, type });
+}
+
+function drawPowerUps() {
+    powerUps.forEach((powerUp, index) => {
+        powerUp.y += speed; 
+        ctx.fillStyle = powerUp.type === "shield" ? "#00f" : powerUp.type === "scoreBoost" ? "#ff0" : "#0ff";
+        ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
+
+        if (powerUp.y > canvas.height) powerUps.splice(index, 1);
+
+        if (Math.hypot(player.x - powerUp.x, player.y - powerUp.y) < player.radius) {
+            activatePowerUp(powerUp.type);
+            powerUps.splice(index, 1); 
+        }
+    });
+}
+
+function activatePowerUp(type) {
+    if (type === "shield") {
+        player.hasShield = true;
+        setTimeout(() => player.hasShield = false, powerUpDuration);
+    } else if (type === "scoreBoost") {
+        score += 75; 
+    } else if (type === "slowDown") {
+        speed /= 2; 
+        setTimeout(() => speed *= 2, powerUpDuration);
+    }
+}
+
+function updateGame() {
+    if (isGameOver) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawPlayer();
+    drawObstacles();
+    drawPowerUps(); 
+
+    score++;
+    document.getElementById("score").textContent = "Score: " + score;
+    document.getElementById("displayedHighScore").textContent = highScore;
+    if (score % 50 === 0) speed += 0.1;
+    updateEXP();
+
+    if (Math.random() < powerUpChance) createPowerUp();
+
+    if (Math.random() < 0.02) createObstacle();
+    requestAnimationFrame(updateGame);
+}
+
     function gameOver() {
         isGameOver = true;
         if (score > highScore) {
