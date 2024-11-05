@@ -41,7 +41,7 @@
     #highScore {
         font-size: 18px;
         color: #ff0;
-        margin-top: 30px;
+        margin-top: 30px; 
     }
     #startButton, #announcementButton {
         background-color: #0f0;
@@ -127,31 +127,6 @@
         color: #000;
         margin-top: 10px;
     }
-    
-    #levelContainer {
-        margin-top: 15px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    #levelText {
-        font-size: 16px;
-        color: #0ff;
-        margin-right: 10px;
-    }
-    #levelBarContainer {
-        background-color: #333;
-        border-radius: 5px;
-        overflow: hidden;
-        width: 200px;
-        height: 15px;
-    }
-    #levelProgress {
-        height: 100%;
-        background-color: #0f0;
-        width: 0%;
-        transition: width 0.3s;
-    }
 </style>
 </head>
 <body>
@@ -161,16 +136,8 @@
     <button id="startButton" onclick="startGame()">Start Game</button>
     <button id="announcementButton" onclick="toggleAnnouncement()">Announcement</button>
     <div id="highScore">High Score: <span id="savedHighScore">0</span></div>
-    
-    <!-- Level Progress Bar -->
-    <div id="levelContainer">
-        <div id="levelText">Level: <span id="levelNumber">1</span></div>
-        <div id="levelBarContainer">
-            <div id="levelProgress"></div>
-        </div>
-    </div>
 </div>
-<div id="announcementBox">🚀 Galactic Path is now live! Good luck, pilots!<br> Galactic Path has finally been released on the 04.11.2024 by Totally_Bad. You can play the BETA now and stay updated for more future changes.</div>
+<div id="announcementBox">🚀 Galactic Path is now live! Good luck, pilots!<br> Space Ranger has finally been released on the 04.11.2024 by Totally_Bad. You can play the BETA now and stay updated for more future changes.</div>
 
 <div id="score" style="display:none;">Score: 0</div>
 <div id="highScoreDisplay" style="display:none;">High Score: <span id="displayedHighScore">0</span></div>
@@ -188,23 +155,6 @@
     let player, obstacles, score, highScore = 0, isGameOver = false, speed = 2;
     let savedHighScore = localStorage.getItem('highScore') || 0;
     document.getElementById("savedHighScore").textContent = savedHighScore;
-
-    // Leveling system
-    let currentLevel = 1;
-    let currentEXP = 0;
-    const expPerScore = 15 / 500;  
-    const levelRequirement = level => 20 * Math.pow(1.5, level - 1); 
-
-    function updateEXP() {
-        currentEXP += score * expPerScore;
-        let requiredEXP = levelRequirement(currentLevel);
-        if (currentEXP >= requiredEXP) {
-            currentEXP -= requiredEXP;
-            currentLevel++;
-        }
-        document.getElementById("levelNumber").textContent = currentLevel;
-        document.getElementById("levelProgress").style.width = (currentEXP / requiredEXP) * 100 + "%";
-    }
 
     function toggleAnnouncement() {
         const box = document.getElementById("announcementBox");
@@ -249,44 +199,70 @@
     }
 
     function drawObstacles() {
-        obstacles.forEach((obstacle, index) => {
-            obstacle.y += speed;
-            ctx.fillStyle = "#f00";
+        ctx.fillStyle = "#f00";
+        obstacles.forEach(obstacle => {
             ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-            if (obstacle.y > canvas.height) obstacles.splice(index, 1);
-            if (Math.hypot(player.x - obstacle.x, player.y - obstacle.y) < player.radius) {
-                gameOver();
+            obstacle.y += speed;
+            if (score >= 500) {
+                obstacle.x += obstacle.direction * 1.5;
+                if (obstacle.x <= 0 || obstacle.x >= canvas.width - obstacle.width) obstacle.direction *= -1;
             }
         });
     }
 
-    function gameOver() {
-        isGameOver = true;
-        if (score > highScore) {
-            highScore = score;
-            localStorage.setItem('highScore', highScore);
-            document.getElementById("savedHighScore").textContent = highScore;
-        }
-        document.getElementById("gameOver").style.display = "block";
+    function checkCollisions() {
+        obstacles.forEach(obstacle => {
+            const dx = player.x - (obstacle.x + obstacle.width / 2);
+            const dy = player.y - (obstacle.y + obstacle.height / 2);
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < player.radius + obstacle.width / 2) isGameOver = true;
+        });
+    }
+
+    function updateScore() {
+        if (isGameOver) return;
+        score += 0.1;
+        document.getElementById("score").innerText = Score: ${Math.floor(score)};
+        document.getElementById("displayedHighScore").textContent = Math.max(savedHighScore, Math.floor(score));
+        if (Math.floor(score) % 100 === 0) speed += 0.2;
     }
 
     function updateGame() {
-        if (isGameOver) return;
+        if (isGameOver) {
+            document.getElementById("gameOver").style.display = "block";
+            if (score > savedHighScore) {
+                savedHighScore = Math.floor(score);
+                localStorage.setItem('highScore', savedHighScore);
+                document.getElementById("savedHighScore").textContent = savedHighScore;
+            }
+            return;
+        }
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawPlayer();
         drawObstacles();
+        updateScore();
+        checkCollisions();
 
-        score++;
-        document.getElementById("score").textContent = "Score: " + score;
-        document.getElementById("displayedHighScore").textContent = highScore;
-        if (score % 50 === 0) speed += 0.1;
-        updateEXP();
-
-        if (Math.random() < 0.02) createObstacle();
+        if (Math.random() < 0.05) createObstacle();
         requestAnimationFrame(updateGame);
     }
-</script>
 
+    window.addEventListener("keydown", (e) => {
+        const step = 7;
+        if (e.key === "ArrowLeft" && player.x > player.radius) player.x -= step;
+        if (e.key === "ArrowRight" && player.x < canvas.width - player.radius) player.x += step;
+        if (isGameOver && e.key === " ") startGame();
+    });
+
+    canvas.addEventListener("touchmove", (e) => {
+        const touchX = e.touches[0].clientX - canvas.offsetLeft;
+        player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, touchX));
+    });
+
+    document.getElementById("displayedHighScore").textContent = savedHighScore;
+
+    startGame();
+</script>
 </body>
 </html>
