@@ -89,6 +89,38 @@
         font-size: 16px;
         color: #ff0;
     }
+    #levelDisplay {
+        position: absolute;
+        top: 70px;
+        left: 10px;
+        font-size: 16px;
+        color: #0ff;
+    }
+    #expBarContainer {
+        position: absolute;
+        bottom: 120px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+        background: #444;
+        height: 20px;
+        border-radius: 10px;
+        display: flex;
+    }
+    #expBar {
+        background: #0f0;
+        height: 100%;
+        width: 0;
+        border-radius: 10px;
+    }
+
+    #cooldownDisplay {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 16px;
+        color: #ff0;
+    }
 
     #gameOver {
         display: none;
@@ -141,6 +173,11 @@
 
 <div id="score" style="display:none;">Score: 0</div>
 <div id="highScoreDisplay" style="display:none;">High Score: <span id="displayedHighScore">0</span></div>
+<div id="levelDisplay" style="display:none;">Level: <span id="level">1</span></div>
+<div id="expBarContainer" style="display:none;">
+    <div id="expBar"></div>
+</div>
+<div id="cooldownDisplay" style="display:none;">Power-Up: None</div>
 <div id="gameOver">
     Game Over!<br>
     <button id="restartButton" onclick="startGame()">Restart</button>
@@ -154,6 +191,9 @@
 
     let player, obstacles, score, highScore = 0, isGameOver = false, speed = 2;
     let savedHighScore = localStorage.getItem('highScore') || 0;
+    let level = 1, exp = 0;
+    let powerUpActive = null, powerUpCooldown = 0, scoreMultiplier = 1;
+
     document.getElementById("savedHighScore").textContent = savedHighScore;
 
     function toggleAnnouncement() {
@@ -166,6 +206,9 @@
         document.getElementById("gameCanvas").style.display = "block";
         document.getElementById("score").style.display = "block";
         document.getElementById("highScoreDisplay").style.display = "block";
+        document.getElementById("levelDisplay").style.display = "block";
+        document.getElementById("expBarContainer").style.display = "flex";
+        document.getElementById("cooldownDisplay").style.display = "block";
         document.getElementById("gameOver").style.display = "none";
 
         player = { x: 200, y: 550, radius: 10 };
@@ -173,6 +216,9 @@
         score = 0;
         isGameOver = false;
         speed = 2;
+        powerUpActive = null;
+        powerUpCooldown = 0;
+        scoreMultiplier = 1;
         requestAnimationFrame(updateGame);
     }
 
@@ -181,6 +227,9 @@
         document.getElementById("gameCanvas").style.display = "none";
         document.getElementById("score").style.display = "none";
         document.getElementById("highScoreDisplay").style.display = "none";
+        document.getElementById("levelDisplay").style.display = "none";
+        document.getElementById("expBarContainer").style.display = "none";
+        document.getElementById("cooldownDisplay").style.display = "none";
         document.getElementById("gameOver").style.display = "none";
     }
 
@@ -221,10 +270,55 @@
 
     function updateScore() {
         if (isGameOver) return;
-        score += 0.1;
+        score += 0.1 * scoreMultiplier;
         document.getElementById("score").innerText = `Score: ${Math.floor(score)}`;
         document.getElementById("displayedHighScore").textContent = Math.max(savedHighScore, Math.floor(score));
+
         if (Math.floor(score) % 100 === 0) speed += 0.2;
+
+        if (score >= 500) activateRandomPowerUp();
+
+        gainExp(Math.floor(score * 0.03));
+    }
+
+    function gainExp(amount) {
+        exp += amount;
+        let expToNextLevel = level * 20;
+        if (exp >= expToNextLevel) {
+            level++;
+            exp -= expToNextLevel;
+        }
+        updateExpBar();
+        document.getElementById("level").textContent = level;
+    }
+
+    function updateExpBar() {
+        const expPercentage = (exp / (level * 20)) * 100;
+        document.getElementById("expBar").style.width = `${expPercentage}%`;
+    }
+
+    function activateRandomPowerUp() {
+        if (!powerUpActive) {
+            const powerUps = ['wall-pass', 'slow-down', 'score-boost'];
+            const selectedPowerUp = powerUps[Math.floor(Math.random() * powerUps.length)];
+            powerUpActive = selectedPowerUp;
+            powerUpCooldown = selectedPowerUp === 'slow-down' ? 5 : 3;
+            if (selectedPowerUp === 'score-boost') scoreMultiplier = 2;
+            document.getElementById("cooldownDisplay").innerText = `Power-Up: ${selectedPowerUp} (${powerUpCooldown}s)`;
+        }
+    }
+
+    function updateCooldown() {
+        if (powerUpActive) {
+            powerUpCooldown -= 0.1;
+            if (powerUpCooldown <= 0) {
+                powerUpActive = null;
+                scoreMultiplier = 1;
+                document.getElementById("cooldownDisplay").innerText = 'Power-Up: None';
+            } else {
+                document.getElementById("cooldownDisplay").innerText = `Power-Up: ${powerUpActive} (${Math.ceil(powerUpCooldown)}s)`;
+            }
+        }
     }
 
     function updateGame() {
@@ -243,6 +337,7 @@
         drawObstacles();
         updateScore();
         checkCollisions();
+        updateCooldown();
 
         if (Math.random() < 0.05) createObstacle();
         requestAnimationFrame(updateGame);
