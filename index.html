@@ -23,7 +23,7 @@
       from { background-position: 0 0; }
       to { background-position: -1000px 1000px; }
     }
-
+    
     #container {
       display: flex;
       justify-content: center;
@@ -31,7 +31,7 @@
       height: 100vh;
       flex-direction: column;
     }
-
+    
     .button {
       background-color: #222;
       border: 2px solid #0ff;
@@ -45,7 +45,7 @@
     }
     .button:hover { transform: scale(1.1); }
     .button:active { transform: scale(1); }
-
+    
     #announcement-box {
       position: absolute;
       top: 20px;
@@ -56,7 +56,7 @@
       border-radius: 5px;
       display: none;
     }
-
+    
     #pause-menu, #game-over-menu {
       display: none;
       position: absolute;
@@ -70,14 +70,14 @@
       text-align: center;
     }
     #pause-menu .button, #game-over-menu .button { margin: 15px 0; }
-
+    
     #game-canvas {
       display: none;
       width: 100vw;
       height: 100vh;
       background-color: black;
     }
-
+    
     #score, #highscore {
       position: absolute;
       top: 20px;
@@ -85,7 +85,7 @@
       color: #0ff;
     }
     #score { right: 20px; }
-    #highscore { left: 20px; }
+    #highscore { right: 20px; top: 50px; }
   </style>
 </head>
 <body>
@@ -130,20 +130,24 @@
   const highScoreDisplay = document.getElementById('highscore');
   const ctx = gameCanvas.getContext('2d');
 
-  let player = { x: 50, y: 50, size: 20, speed: 5 };
+  let playerImage = new Image();
+  playerImage.src = 'https://static.vecteezy.com/system/resources/thumbnails/046/553/712/small/futuristic-spaceship-or-fighter-jet-on-transparent-background-png.png';
+  let asteroidImage = new Image();
+  asteroidImage.src = 'https://png.pngtree.com/png-vector/20220612/ourmid/pngtree-asteroid-icon-cartoon-vector-design-png-image_5030090.png';
+
+  let player = { x: 0, y: 0, width: 50, height: 50, speed: 5 };
   let obstacles = [];
   let powerUps = [];
   let score = 0;
   let highScore = localStorage.getItem('highScore') || 0;
   let gamePaused = false;
-  let announcementTimeout;
+  let gameRunning = true;
   
   highScoreDisplay.textContent = "High Score: " + highScore;
 
   function showAnnouncement() {
     announcementBox.style.display = 'block';
-    clearTimeout(announcementTimeout);
-    announcementTimeout = setTimeout(() => {
+    setTimeout(() => {
       announcementBox.style.display = 'none';
     }, 60000);
   }
@@ -154,6 +158,10 @@
     scoreDisplay.style.display = 'block';
     highScoreDisplay.style.display = 'block';
     announcementBox.style.display = 'none';
+    player.x = gameCanvas.width / 2 - player.width / 2;
+    player.y = gameCanvas.height - player.height - 10;
+    score = 0;
+    gameRunning = true;
     document.addEventListener('keydown', handleMovement);
     gameLoop();
   }
@@ -178,7 +186,6 @@
     ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
     obstacles = [];
     powerUps = [];
-    score = 0;
   }
 
   function showControls() {
@@ -186,11 +193,11 @@
   }
 
   function handleMovement(event) {
-    if (!gamePaused) {
+    if (!gamePaused && gameRunning) {
       if (event.key === 'a') player.x = Math.max(0, player.x - player.speed);
-      if (event.key === 'd') player.x = Math.min(gameCanvas.width - player.size, player.x + player.speed);
+      if (event.key === 'd') player.x = Math.min(gameCanvas.width - player.width, player.x + player.speed);
       if (event.key === 'w') player.y = Math.max(0, player.y - player.speed);
-      if (event.key === 's') player.y = Math.min(gameCanvas.height - player.size, player.y + player.speed);
+      if (event.key === 's') player.y = Math.min(gameCanvas.height - player.height, player.y + player.speed);
       if (event.key === 'Escape') togglePause();
     } else if (event.key === 'Escape') { togglePause(); }
   }
@@ -198,65 +205,52 @@
   function createObstacle() {
     const size = Math.random() * 30 + 20;
     obstacles.push({
-      x: Math.random() * gameCanvas.width,
+      x: Math.random() * (gameCanvas.width - size),
       y: -size,
-      size: size,
+      width: size,
+      height: size,
       speed: Math.random() * 3 + 2,
     });
   }
 
-  function createPowerUp() {
-    powerUps.push({
-      x: Math.random() * gameCanvas.width,
-      y: -20,
-      size: 15,
-      speed: 2,
-    });
-  }
-
   function gameLoop() {
-    if (!gamePaused) {
+    if (gameRunning && !gamePaused) {
       ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
-      
-      ctx.fillStyle = '#0ff';
-      ctx.fillRect(player.x, player.y, player.size, player.size);
 
+      // Draw and move player
+      ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
+
+      // Speed Up Every 50 Points
       if (score > 0 && score % 50 === 0) player.speed += 0.5;
 
+      // Handle Obstacles
       obstacles.forEach((obs, index) => {
         obs.y += obs.speed;
-        ctx.fillStyle = 'red';
-        ctx.fillRect(obs.x, obs.y, obs.size, obs.size);
+        ctx.drawImage(asteroidImage, obs.x, obs.y, obs.width, obs.height);
 
-        if (obs.y + obs.size > player.y && obs.y < player.y + player.size && obs.x + obs.size > player.x && obs.x < player.x + player.size) {
+        // Collision Detection with player
+        if (obs.y + obs.height > player.y && obs.y < player.y + player.height && obs.x + obs.width > player.x && obs.x < player.x + player.width) {
+          gameRunning = false;
           endGame();
         }
 
+        // Remove off-screen obstacles
         if (obs.y > gameCanvas.height) obstacles.splice(index, 1);
       });
 
-      powerUps.forEach((pu, index) => {
-        pu.y += pu.speed;
-        ctx.fillStyle = 'green';
-        ctx.fillRect(pu.x, pu.y, pu.size, pu.size);
-
-        if (pu.y + pu.size > player.y && pu.y < player.y + player.size && pu.x + pu.size > player.x && pu.x < player.x + player.size) {
-          score += 10;
-          scoreDisplay.textContent = "Score: " + score;
-          powerUps.splice(index, 1);
-        }
-      });
-
+      // Add new obstacles
       if (Math.random() < 0.03) createObstacle();
-      if (Math.random() < 0.01) createPowerUp();
+
+      scoreDisplay.textContent = "Score: " + score++;
     }
-    requestAnimationFrame(gameLoop);
+    if (gameRunning) requestAnimationFrame(gameLoop);
   }
 
   function endGame() {
     if (score > highScore) {
       highScore = score;
       localStorage.setItem('highScore', highScore);
+      highScoreDisplay.textContent = "High Score: " + highScore;
     }
     score = 0;
     player.speed = 5;
@@ -267,15 +261,17 @@
     gameOverMenu.style.display = 'none';
     score = 0;
     obstacles = [];
-    powerUps = [];
     scoreDisplay.textContent = "Score: 0";
     player.speed = 5;
+    gameRunning = true;
     gameLoop();
   }
 
   window.onload = () => {
     gameCanvas.width = window.innerWidth;
     gameCanvas.height = window.innerHeight;
+    player.x = gameCanvas.width / 2 - player.width / 2;
+    player.y = gameCanvas.height - player.height - 10;
   };
 
   window.addEventListener('resize', () => {
