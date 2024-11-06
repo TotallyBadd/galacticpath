@@ -288,12 +288,13 @@ window.addEventListener("keydown", (e) => {
 canvas.addEventListener("touchstart", (e) => {
     touchStartX = e.touches[0].clientX;
 });
-canvas.addEventListener("touchmove", (e) => {
-    touchCurrentX = e.touches[0].clientX;
-    const deltaX = touchCurrentX - touchStartX;
-    player.x += deltaX * 0.1;
-    touchStartX = touchCurrentX;
-});
+
+canvas.addEventListener("touchstart", (e) => touchStartX = e.changedTouches[0].screenX);
+    canvas.addEventListener("touchmove", (e) => touchEndX = e.changedTouches[0].screenX);
+    canvas.addEventListener("touchend", () => {
+        if (touchEndX < touchStartX) movePlayer(-1);
+        if (touchEndX > touchStartX) movePlayer(1);
+    });
 
 </script>
 </body>
