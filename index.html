@@ -46,11 +46,6 @@
     .button:hover { transform: scale(1.1); }
     .button:active { transform: scale(1); }
 
-    #discord-icon {
-      width: 40px;
-      height: 40px;
-    }
-
     #announcement-box {
       position: absolute;
       top: 20px;
@@ -62,7 +57,7 @@
       display: none;
     }
 
-    #pause-menu {
+    #pause-menu, #game-over-menu {
       display: none;
       position: absolute;
       top: 50%;
@@ -74,7 +69,7 @@
       border-radius: 10px;
       text-align: center;
     }
-    #pause-menu .button { margin: 15px 0; }
+    #pause-menu .button, #game-over-menu .button { margin: 15px 0; }
 
     #game-canvas {
       display: none;
@@ -83,52 +78,67 @@
       background-color: black;
     }
 
-    #score {
+    #score, #highscore {
       position: absolute;
       top: 20px;
-      right: 20px;
       font-size: 1.5em;
       color: #0ff;
-      display: none;
     }
+    #score { right: 20px; }
+    #highscore { left: 20px; }
   </style>
 </head>
 <body>
 
+<!-- Start Page -->
 <div id="container">
   <h1>Galactic Path</h1>
-  <a href="https://discord.gg/F752C2kVtU" target="_blank">
-    <img src="https://img.icons8.com/?size=80&id=oqrxoYQucToV&format=png" alt="Discord" id="discord-icon">
-  </a>
   <button class="button" onclick="startGame()">Start Game</button>
   <button class="button" onclick="showAnnouncement()">Announcements</button>
 </div>
 
+<!-- Announcement Box -->
 <div id="announcement-box">Stay tuned for updates in Galactic Path!</div>
 
+<!-- Pause Menu -->
 <div id="pause-menu">
   <button class="button" onclick="resumeGame()">Resume</button>
   <button class="button" onclick="goToHome()">Back to Home</button>
   <button class="button" onclick="showControls()">Controls</button>
 </div>
 
+<!-- Game Over Menu -->
+<div id="game-over-menu">
+  <h2>Game Over</h2>
+  <button class="button" onclick="restartGame()">Restart</button>
+  <button class="button" onclick="goToHome()">Back to Home</button>
+</div>
+
+<!-- Game Canvas and Score Display -->
 <canvas id="game-canvas"></canvas>
 <div id="score">Score: 0</div>
+<div id="highscore">High Score: 0</div>
 
+<!-- JavaScript -->
 <script>
   const container = document.getElementById('container');
   const gameCanvas = document.getElementById('game-canvas');
   const announcementBox = document.getElementById('announcement-box');
   const pauseMenu = document.getElementById('pause-menu');
+  const gameOverMenu = document.getElementById('game-over-menu');
   const scoreDisplay = document.getElementById('score');
+  const highScoreDisplay = document.getElementById('highscore');
   const ctx = gameCanvas.getContext('2d');
 
   let player = { x: 50, y: 50, size: 20, speed: 5 };
   let obstacles = [];
   let powerUps = [];
   let score = 0;
+  let highScore = localStorage.getItem('highScore') || 0;
   let gamePaused = false;
   let announcementTimeout;
+  
+  highScoreDisplay.textContent = "High Score: " + highScore;
 
   function showAnnouncement() {
     announcementBox.style.display = 'block';
@@ -142,6 +152,7 @@
     container.style.display = 'none';
     gameCanvas.style.display = 'block';
     scoreDisplay.style.display = 'block';
+    highScoreDisplay.style.display = 'block';
     announcementBox.style.display = 'none';
     document.addEventListener('keydown', handleMovement);
     gameLoop();
@@ -159,10 +170,11 @@
 
   function goToHome() {
     gamePaused = false;
-    pauseMenu.style.display = 'none';
+    gameOverMenu.style.display = 'none';
     container.style.display = 'flex';
     gameCanvas.style.display = 'none';
     scoreDisplay.style.display = 'none';
+    highScoreDisplay.style.display = 'none';
     ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
     obstacles = [];
     powerUps = [];
@@ -175,13 +187,11 @@
 
   function handleMovement(event) {
     if (!gamePaused) {
-      switch (event.key) {
-        case 'a': player.x -= player.speed; break;
-        case 'd': player.x += player.speed; break;
-        case 'w': player.y -= player.speed; break;
-        case 's': player.y += player.speed; break;
-        case 'Escape': togglePause(); break;
-      }
+      if (event.key === 'a') player.x = Math.max(0, player.x - player.speed);
+      if (event.key === 'd') player.x = Math.min(gameCanvas.width - player.size, player.x + player.speed);
+      if (event.key === 'w') player.y = Math.max(0, player.y - player.speed);
+      if (event.key === 's') player.y = Math.min(gameCanvas.height - player.size, player.y + player.speed);
+      if (event.key === 'Escape') togglePause();
     } else if (event.key === 'Escape') { togglePause(); }
   }
 
@@ -210,27 +220,27 @@
       
       ctx.fillStyle = '#0ff';
       ctx.fillRect(player.x, player.y, player.size, player.size);
-      
+
+      if (score > 0 && score % 50 === 0) player.speed += 0.5;
+
       obstacles.forEach((obs, index) => {
         obs.y += obs.speed;
         ctx.fillStyle = 'red';
         ctx.fillRect(obs.x, obs.y, obs.size, obs.size);
 
-        if (obs.y + obs.size > player.y && obs.y < player.y + player.size && 
-            obs.x + obs.size > player.x && obs.x < player.x + player.size) {
-          alert("Game Over! Final Score: " + score);
-          goToHome();
+        if (obs.y + obs.size > player.y && obs.y < player.y + player.size && obs.x + obs.size > player.x && obs.x < player.x + player.size) {
+          endGame();
         }
+
         if (obs.y > gameCanvas.height) obstacles.splice(index, 1);
       });
 
-      powerUps.forEach((powerUp, index) => {
-        powerUp.y += powerUp.speed;
+      powerUps.forEach((pu, index) => {
+        pu.y += pu.speed;
         ctx.fillStyle = 'green';
-        ctx.fillRect(powerUp.x, powerUp.y, powerUp.size, powerUp.size);
+        ctx.fillRect(pu.x, pu.y, pu.size, pu.size);
 
-        if (powerUp.y + powerUp.size > player.y && powerUp.y < player.y + player.size && 
-            powerUp.x + powerUp.size > player.x && powerUp.x < player.x + player.size) {
+        if (pu.y + pu.size > player.y && pu.y < player.y + player.size && pu.x + pu.size > player.x && pu.x < player.x + player.size) {
           score += 10;
           scoreDisplay.textContent = "Score: " + score;
           powerUps.splice(index, 1);
@@ -241,6 +251,26 @@
       if (Math.random() < 0.01) createPowerUp();
     }
     requestAnimationFrame(gameLoop);
+  }
+
+  function endGame() {
+    if (score > highScore) {
+      highScore = score;
+      localStorage.setItem('highScore', highScore);
+    }
+    score = 0;
+    player.speed = 5;
+    gameOverMenu.style.display = 'block';
+  }
+
+  function restartGame() {
+    gameOverMenu.style.display = 'none';
+    score = 0;
+    obstacles = [];
+    powerUps = [];
+    scoreDisplay.textContent = "Score: 0";
+    player.speed = 5;
+    gameLoop();
   }
 
   window.onload = () => {
