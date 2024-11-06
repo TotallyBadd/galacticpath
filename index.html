@@ -230,6 +230,12 @@ function generateObstacles() {
 
 function updateScore() {
     if (!isPaused && !isGameOver) score += 1;
+     score += 1;
+
+        if (score % 100 === 0) {
+            speed += 0.2;
+        }
+    }
 }
 setInterval(updateScore, 100);
 
