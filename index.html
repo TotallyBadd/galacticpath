@@ -72,14 +72,25 @@
     }
     #pause-menu .button, #game-over-menu .button { margin: 15px 0; }
 
-    .discord-icon {
-      position: absolute;
-      bottom: 10px;
-      left: 10px;
-      width: 50px;
-      height: 50px;
-      cursor: pointer;
-    }
+.icon-container {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  display: flex;
+  gap: 10px; 
+        }
+        
+  .discord-icon {
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+        }
+
+  .youtube-icon {
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+        }
     
     #game-canvas {
       display: none;
@@ -100,14 +111,21 @@
   </style>
 </head>
 <body>
-
-<!-- DC Link -->
   
-<a href="https://discord.gg/F752C2kVtU" target="_blank">
-    <img src="https://cdn3.emoji.gg/emojis/9738-discord-ico.png" 
-    alt="Discord" class="discord-icon">
-</a>
+<div class="icon-container">
+    <!-- Discord Icon mit Link -->
+    <a href="https://discord.gg/F752C2kVtU" target="_blank">
+        <img src="https://cdn3.emoji.gg/emojis/discord.png" 
+             alt="Discord" class="discord-icon">
+    </a>
 
+    <!-- YouTube Icon mit Link -->
+    <a href="https://youtube.com/@galacticpath" target="_blank">
+        <img src="https://cdn3.emoji.gg/emojis/33615-youtube69.png" 
+             alt="YouTube" class="youtube-icon">
+    </a>
+</div>
+  
 <!-- Start Page -->
 <div id="container">
   <h1>Galactic Path</h1>
