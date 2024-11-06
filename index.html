@@ -71,7 +71,7 @@ body {
     border: 2px solid #ffffff22;
     box-shadow: 0 0 15px #0ff;
 }
-#score {
+#score, #highScoreDisplay {
     position: absolute;
     top: 10px;
     left: 10px;
@@ -79,10 +79,7 @@ body {
     color: #0ff;
 }
 #highScoreDisplay {
-    position: absolute;
     top: 40px;
-    left: 10px;
-    font-size: 16px;
     color: #ff0;
 }
 #pauseMenu {
@@ -189,7 +186,7 @@ function startGame() {
     isGameOver = false;
     isPaused = false;
     speed = 2;
-    setTimeout(() => { generateObstacles(); }, 2000); 
+    setTimeout(() => { generateObstacles(); }, 2000); // delay for 2 seconds
     requestAnimationFrame(updateGame);
 }
 
@@ -212,19 +209,20 @@ function togglePause() {
 function createObstacle() {
     const x = Math.floor(Math.random() * (canvas.width - 20));
     const direction = Math.random() > 0.5 ? 1 : -1;
-    obstacles.push({ x: x, y: -30, width: 20, height: 20, dx: direction * 2 });
+    obstacles.push({ x: x, y: -30, width: 20, height: 20, dx: direction * 2, move: false });
 }
 
 function generateObstacles() {
     setInterval(() => {
-        if (!isPaused && !isGameOver && obstacles.length < 10) {
+        if (!isPaused && !isGameOver && obstacles.length < 15) {
             createObstacle();
         }
-    }, 500); 
+    }, 300); // increased frequency for more obstacles
 }
 
 function updateScore() {
     if (!isPaused && !isGameOver) score += 1;
+    if (score >= 250) obstacles.forEach(obs => obs.move = true); // start moving after 250 points
 }
 setInterval(updateScore, 100);
 
@@ -239,9 +237,9 @@ function updateGame() {
     obstacles.forEach((obs, index) => {
         ctx.fillStyle = "red";
         ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-        obs.y += speed;
-        obs.x += obs.dx;
-        if (obs.y > canvas.height) obstacles.splice(index, 1); 
+        if (obs.move) obs.y += speed;
+        obs.x += obs.move ? obs.dx : 0;
+        if (obs.y > canvas.height) obstacles.splice(index, 1); // remove if off-screen
         if (Math.hypot(player.x - obs.x, player.y - obs.y) < player.radius) {
             isGameOver = true;
             document.getElementById("gameOver").style.display = "block";
@@ -251,7 +249,7 @@ function updateGame() {
             }
         }
     });
-    
+
     if (!isGameOver) requestAnimationFrame(updateGame);
 
     ctx.fillStyle = "#0ff";
