@@ -7,7 +7,6 @@
   <link rel="icon" href="https://img.icons8.com/?size=80&id=oqrxoYQucToV&format=png" type="image/png">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    /* Global Styles */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -18,14 +17,13 @@
       background: url('https://www.transparenttextures.com/patterns/stardust.png') repeat;
       overflow: hidden;
       color: white;
+      animation: starScroll 10s linear infinite;
     }
     @keyframes starScroll {
       from { background-position: 0 0; }
       to { background-position: -1000px 1000px; }
     }
-    body { animation: starScroll 10s linear infinite; }
 
-    /* Centered Container */
     #container {
       display: flex;
       justify-content: center;
@@ -34,7 +32,6 @@
       flex-direction: column;
     }
 
-    /* Button Styles */
     .button {
       background-color: #222;
       border: 2px solid #0ff;
@@ -49,16 +46,11 @@
     .button:hover { transform: scale(1.1); }
     .button:active { transform: scale(1); }
 
-    /* Discord Icon */
     #discord-icon {
-      position: absolute;
-      top: 20px;
-      right: 20px;
       width: 40px;
       height: 40px;
     }
 
-    /* Announcement Box */
     #announcement-box {
       position: absolute;
       top: 20px;
@@ -70,7 +62,6 @@
       display: none;
     }
 
-    /* Pause Menu Styles */
     #pause-menu {
       display: none;
       position: absolute;
@@ -85,63 +76,75 @@
     }
     #pause-menu .button { margin: 15px 0; }
 
-    /* Game Area */
     #game-canvas {
       display: none;
       width: 100vw;
       height: 100vh;
       background-color: black;
     }
+
+    #score {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 1.5em;
+      color: #0ff;
+      display: none;
+    }
   </style>
 </head>
 <body>
 
-<!-- Discord Icon -->
-<a href="https://discord.gg/F752C2kVtU" target="_blank">
-  <img src="https://img.icons8.com/?size=80&id=oqrxoYQucToV&format=png" alt="Discord" id="discord-icon">
-</a>
-
-<!-- Announcement Box -->
-<div id="announcement-box">Stay tuned for updates in Galactic Path!</div>
-
-<!-- Main Container -->
 <div id="container">
   <h1>Galactic Path</h1>
+  <a href="https://discord.gg/F752C2kVtU" target="_blank">
+    <img src="https://img.icons8.com/?size=80&id=oqrxoYQucToV&format=png" alt="Discord" id="discord-icon">
+  </a>
   <button class="button" onclick="startGame()">Start Game</button>
   <button class="button" onclick="showAnnouncement()">Announcements</button>
 </div>
 
-<!-- Pause Menu -->
+<div id="announcement-box">Stay tuned for updates in Galactic Path!</div>
+
 <div id="pause-menu">
   <button class="button" onclick="resumeGame()">Resume</button>
   <button class="button" onclick="goToHome()">Back to Home</button>
   <button class="button" onclick="showControls()">Controls</button>
 </div>
 
-<!-- Game Canvas -->
 <canvas id="game-canvas"></canvas>
+<div id="score">Score: 0</div>
 
-<!-- JavaScript -->
 <script>
   const container = document.getElementById('container');
   const gameCanvas = document.getElementById('game-canvas');
   const announcementBox = document.getElementById('announcement-box');
   const pauseMenu = document.getElementById('pause-menu');
+  const scoreDisplay = document.getElementById('score');
   const ctx = gameCanvas.getContext('2d');
 
   let player = { x: 50, y: 50, size: 20, speed: 5 };
+  let obstacles = [];
+  let powerUps = [];
+  let score = 0;
   let gamePaused = false;
+  let announcementTimeout;
+
+  function showAnnouncement() {
+    announcementBox.style.display = 'block';
+    clearTimeout(announcementTimeout);
+    announcementTimeout = setTimeout(() => {
+      announcementBox.style.display = 'none';
+    }, 60000);
+  }
 
   function startGame() {
     container.style.display = 'none';
     gameCanvas.style.display = 'block';
+    scoreDisplay.style.display = 'block';
+    announcementBox.style.display = 'none';
     document.addEventListener('keydown', handleMovement);
     gameLoop();
-  }
-
-  function showAnnouncement() {
-    announcementBox.style.display = 'block';
-    setTimeout(() => { announcementBox.style.display = 'none'; }, 3000);
   }
 
   function togglePause() {
@@ -159,7 +162,11 @@
     pauseMenu.style.display = 'none';
     container.style.display = 'flex';
     gameCanvas.style.display = 'none';
+    scoreDisplay.style.display = 'none';
     ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+    obstacles = [];
+    powerUps = [];
+    score = 0;
   }
 
   function showControls() {
@@ -178,16 +185,64 @@
     } else if (event.key === 'Escape') { togglePause(); }
   }
 
+  function createObstacle() {
+    const size = Math.random() * 30 + 20;
+    obstacles.push({
+      x: Math.random() * gameCanvas.width,
+      y: -size,
+      size: size,
+      speed: Math.random() * 3 + 2,
+    });
+  }
+
+  function createPowerUp() {
+    powerUps.push({
+      x: Math.random() * gameCanvas.width,
+      y: -20,
+      size: 15,
+      speed: 2,
+    });
+  }
+
   function gameLoop() {
     if (!gamePaused) {
       ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+      
       ctx.fillStyle = '#0ff';
       ctx.fillRect(player.x, player.y, player.size, player.size);
+      
+      obstacles.forEach((obs, index) => {
+        obs.y += obs.speed;
+        ctx.fillStyle = 'red';
+        ctx.fillRect(obs.x, obs.y, obs.size, obs.size);
+
+        if (obs.y + obs.size > player.y && obs.y < player.y + player.size && 
+            obs.x + obs.size > player.x && obs.x < player.x + player.size) {
+          alert("Game Over! Final Score: " + score);
+          goToHome();
+        }
+        if (obs.y > gameCanvas.height) obstacles.splice(index, 1);
+      });
+
+      powerUps.forEach((powerUp, index) => {
+        powerUp.y += powerUp.speed;
+        ctx.fillStyle = 'green';
+        ctx.fillRect(powerUp.x, powerUp.y, powerUp.size, powerUp.size);
+
+        if (powerUp.y + powerUp.size > player.y && powerUp.y < player.y + player.size && 
+            powerUp.x + powerUp.size > player.x && powerUp.x < player.x + player.size) {
+          score += 10;
+          scoreDisplay.textContent = "Score: " + score;
+          powerUps.splice(index, 1);
+        }
+      });
+
+      if (Math.random() < 0.03) createObstacle();
+      if (Math.random() < 0.01) createPowerUp();
     }
     requestAnimationFrame(gameLoop);
   }
 
-  // Set canvas size on load
   window.onload = () => {
     gameCanvas.width = window.innerWidth;
     gameCanvas.height = window.innerHeight;
