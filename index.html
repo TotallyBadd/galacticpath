@@ -289,13 +289,6 @@ canvas.addEventListener("touchstart", (e) => {
     touchStartX = e.touches[0].clientX;
 });
 
-canvas.addEventListener("touchstart", (e) => touchStartX = e.changedTouches[0].screenX);
-    canvas.addEventListener("touchmove", (e) => touchEndX = e.changedTouches[0].screenX);
-    canvas.addEventListener("touchend", () => {
-        if (touchEndX < touchStartX) movePlayer(-1);
-        if (touchEndX > touchStartX) movePlayer(1);
-    });
-
 </script>
 </body>
 </html>
