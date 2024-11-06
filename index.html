@@ -175,6 +175,7 @@ let player, obstacles, score = 0, highScore = 0, isGameOver = false, isPaused = 
 let savedHighScore = localStorage.getItem('highScore') || 0;
 document.getElementById("savedHighScore").textContent = savedHighScore;
 let touchStartX = 0;
+let touchCurrentX = 0;
 
 function toggleAnnouncement() {
     const box = document.getElementById("announcementBox");
@@ -194,7 +195,7 @@ function startGame() {
     isGameOver = false;
     isPaused = false;
     speed = 2;
-    setTimeout(() => { generateObstacles(); }, 2000); // delay for 2 seconds
+    setTimeout(() => { generateObstacles(); }, 2000);
     requestAnimationFrame(updateGame);
 }
 
@@ -244,8 +245,10 @@ function updateGame() {
         obs.y += speed;
         ctx.fillStyle = "red";
         ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-        if (obs.y > canvas.height) obstacles.splice(index, 1);
-        if (Math.hypot(player.x - obs.x, player.y - obs.y) < player.radius) {
+        
+        const distX = Math.abs(player.x - (obs.x + obs.width / 2));
+        const distY = Math.abs(player.y - (obs.y + obs.height / 2));
+        if (distX < player.radius + obs.width / 2 && distY < player.radius + obs.height / 2) {
             isGameOver = true;
             document.getElementById("gameOver").style.display = "block";
             if (score > highScore) {
@@ -253,9 +256,14 @@ function updateGame() {
                 localStorage.setItem('highScore', highScore);
             }
         }
+        if (obs.y > canvas.height) obstacles.splice(index, 1);
     });
 
     document.getElementById("scoreDisplay").textContent = `Score: ${score} | High Score: ${Math.max(score, savedHighScore)}`;
+
+    if (player.x - player.radius < 0) player.x = player.radius;
+    if (player.x + player.radius > canvas.width) player.x = canvas.width - player.radius;
+
     if (!isGameOver) requestAnimationFrame(updateGame);
 }
 
@@ -267,11 +275,12 @@ document.addEventListener("keydown", function (event) {
 
 document.addEventListener("touchstart", function (event) {
     touchStartX = event.touches[0].clientX;
+    touchCurrentX = player.x;
 });
 
-document.addEventListener("touchend", function (event) {
-    const dx = event.changedTouches[0].clientX - touchStartX;
-    if (Math.abs(dx) > 30) player.x += dx > 0 ? 10 : -10;
+document.addEventListener("touchmove", function (event) {
+    const dx = event.touches[0].clientX - touchStartX;
+    player.x = touchCurrentX + dx;
 });
 </script>
 </body>
