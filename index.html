@@ -278,6 +278,39 @@
     gameCanvas.width = window.innerWidth;
     gameCanvas.height = window.innerHeight;
   });
+
+let touchStartX = 0;
+let touchEndX = 0;
+let isTouching = false;
+
+function handleTouchStart(event) {
+  touchStartX = event.touches[0].clientX;
+  isTouching = true;
+}
+
+function handleTouchMove(event) {
+  if (isTouching) {
+    touchEndX = event.touches[0].clientX;
+    if (touchEndX > touchStartX + 10) {
+      player.x = Math.min(gameCanvas.width - player.width, player.x + player.speed);
+      touchStartX = touchEndX; 
+    }
+    else if (touchEndX < touchStartX - 10) {
+      player.x = Math.max(0, player.x - player.speed);
+      touchStartX = touchEndX;
+    }
+  }
+}
+
+function handleTouchEnd() {
+  isTouching = false;
+}
+
+// Event-Listener für Touch-Events hinzufügen
+gameCanvas.addEventListener('touchstart', handleTouchStart);
+gameCanvas.addEventListener('touchmove', handleTouchMove);
+gameCanvas.addEventListener('touchend', handleTouchEnd);
+  
 </script>
 
 </body>
