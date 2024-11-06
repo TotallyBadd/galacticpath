@@ -1,294 +1,203 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Galactic Path</title>
-<link rel="icon" href="https://img.icons8.com/?size=80&id=oqrxoYQucToV&format=png" type="image/png">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-<style>
-body, html {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background: #000;
-    color: white;
-    font-family: "Orbitron", sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-@keyframes starScroll {
-    0% { background-position: 0 0; }
-    100% { background-position: 0 2000px; }
-}
-body {
-    background: url('https://www.transparenttextures.com/patterns/stardust.png') repeat;
-    animation: starScroll 10s linear infinite;
-}
-#startScreen {
-    text-align: center;
-    color: #0ff;
-}
-#title {
-    font-size: 50px;
-    margin-bottom: 20px;
-    color: #0ff;
-}
-#highScore {
-    font-size: 18px;
-    color: #ff0;
-    margin-top: 30px;
-}
-#startButton, #announcementButton {
-    background-color: #0f0;
-    border: none;
-    padding: 15px;
-    font-size: 18px;
-    cursor: pointer;
-    margin-top: 20px;
-    border-radius: 5px;
-    color: #000;
-}
-#announcementButton {
-    background-color: #0ff;
-}
-#announcementBox {
-    display: none;
-    position: absolute;
-    top: 70px;
-    right: 20px;
-    background-color: rgba(0, 0, 0, 0.8);
-    padding: 10px;
-    color: #fff;
-    border-radius: 5px;
-    width: 200px;
-    font-size: 14px;
-}
-#gameCanvas {
-    background: rgba(0, 0, 0, 0.7);
-    border: 2px solid #ffffff22;
-    box-shadow: 0 0 15px #0ff;
-}
-#score {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    font-size: 20px;
-    color: #0ff;
-}
-#highScoreDisplay {
-    position: absolute;
-    top: 40px;
-    left: 10px;
-    font-size: 16px;
-    color: #ff0;
-}
-#pauseMenu {
-    display: none;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    color: #fff;
-    background-color: rgba(0, 0, 0, 0.9);
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 0 15px #0ff;
-    font-size: 20px;
-}
-#pauseMenu button {
-    background-color: #0ff;
-    color: #000;
-    border: none;
-    padding: 10px;
-    margin-top: 15px;
-    font-size: 18px;
-    cursor: pointer;
-    border-radius: 5px;
-    width: 100%;
-}
-#pauseMenu button:hover {
-    background-color: #00f;
-}
-#gameOver {
-    display: none;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 32px;
-    text-align: center;
-    color: #f00;
-    background-color: rgba(0, 0, 0, 0.85);
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px #f00;
-}
-#gameOver button {
-    background-color: #ff0;
-    color: #000;
-    border: none;
-    padding: 10px;
-    font-size: 20px;
-    cursor: pointer;
-    margin-top: 15px;
-    border-radius: 5px;
-}
-#gameOver button:hover {
-    background-color: #ff8c00;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galactic Path</title>
+  <link rel="icon" href="https://img.icons8.com/?size=80&id=oqrxoYQucToV&format=png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* Global Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Orbitron', sans-serif;
+    }
+    body {
+      background: url('https://www.transparenttextures.com/patterns/stardust.png') repeat;
+      overflow: hidden;
+      color: white;
+    }
+    @keyframes starScroll {
+      from { background-position: 0 0; }
+      to { background-position: -1000px 1000px; }
+    }
+    body { animation: starScroll 10s linear infinite; }
+
+    /* Centered Container */
+    #container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    /* Button Styles */
+    .button {
+      background-color: #222;
+      border: 2px solid #0ff;
+      color: #0ff;
+      padding: 10px 30px;
+      font-size: 1.5em;
+      cursor: pointer;
+      margin: 10px;
+      transition: transform 0.3s;
+      text-transform: uppercase;
+    }
+    .button:hover { transform: scale(1.1); }
+    .button:active { transform: scale(1); }
+
+    /* Discord Icon */
+    #discord-icon {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+    }
+
+    /* Announcement Box */
+    #announcement-box {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: #0ff;
+      padding: 15px;
+      border-radius: 5px;
+      display: none;
+    }
+
+    /* Pause Menu Styles */
+    #pause-menu {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      border: 2px solid #0ff;
+      border-radius: 10px;
+      text-align: center;
+    }
+    #pause-menu .button { margin: 15px 0; }
+
+    /* Game Area */
+    #game-canvas {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+      background-color: black;
+    }
+  </style>
 </head>
 <body>
-<div id="startScreen">
-    <div id="title">Galactic Path</div>
-    <button id="startButton" onclick="startGame()">Start Game</button>
-    <button id="announcementButton" onclick="toggleAnnouncement()">Announcement</button>
-    <div id="highScore">High Score: <span id="savedHighScore">0</span></div>
+
+<!-- Discord Icon -->
+<a href="https://discord.gg/F752C2kVtU" target="_blank">
+  <img src="https://img.icons8.com/?size=80&id=oqrxoYQucToV&format=png" alt="Discord" id="discord-icon">
+</a>
+
+<!-- Announcement Box -->
+<div id="announcement-box">Stay tuned for updates in Galactic Path!</div>
+
+<!-- Main Container -->
+<div id="container">
+  <h1>Galactic Path</h1>
+  <button class="button" onclick="startGame()">Start Game</button>
+  <button class="button" onclick="showAnnouncement()">Announcements</button>
 </div>
-<div id="announcementBox">🚀 Galactic Path is now live! Good luck, pilots!</div>
-<div id="score" style="display:none;">Score: 0</div>
-<div id="highScoreDisplay" style="display:none;">High Score: <span id="displayedHighScore">0</span></div>
-<div id="gameOver">
-    Game Over!<br>
-    <button onclick="startGame()">Restart</button>
+
+<!-- Pause Menu -->
+<div id="pause-menu">
+  <button class="button" onclick="resumeGame()">Resume</button>
+  <button class="button" onclick="goToHome()">Back to Home</button>
+  <button class="button" onclick="showControls()">Controls</button>
 </div>
-<canvas id="gameCanvas" width="400" height="600" style="display:none;"></canvas>
-<div id="pauseMenu">
-    <div>Paused</div>
-    <button onclick="togglePause()">Continue</button>
-    <button onclick="backToHome()">Back to Home</button>
-</div>
+
+<!-- Game Canvas -->
+<canvas id="game-canvas"></canvas>
+
+<!-- JavaScript -->
 <script>
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-let player, obstacles, score = 0, highScore = 0, isGameOver = false, isPaused = false, speed = 2;
-let savedHighScore = localStorage.getItem('highScore') || 0;
-document.getElementById("savedHighScore").textContent = savedHighScore;
-let touchStartX = 0;
-let touchCurrentX = 0;
+  const container = document.getElementById('container');
+  const gameCanvas = document.getElementById('game-canvas');
+  const announcementBox = document.getElementById('announcement-box');
+  const pauseMenu = document.getElementById('pause-menu');
+  const ctx = gameCanvas.getContext('2d');
 
-function toggleAnnouncement() {
-    const box = document.getElementById("announcementBox");
-    box.style.display = box.style.display === "none" ? "block" : "none";
-}
+  let player = { x: 50, y: 50, size: 20, speed: 5 };
+  let gamePaused = false;
 
-function startGame() {
-    document.getElementById("startScreen").style.display = "none";
-    document.getElementById("gameCanvas").style.display = "block";
-    document.getElementById("score").style.display = "block";
-    document.getElementById("highScoreDisplay").style.display = "block";
-    document.getElementById("gameOver").style.display = "none";
-    document.getElementById("pauseMenu").style.display = "none";
-    player = { x: 200, y: 550, radius: 10 };
-    obstacles = [];
-    score = 0;
-    isGameOver = false;
-    isPaused = false;
-    speed = 2;
-    setTimeout(() => { generateObstacles(); }, 2000);
-    requestAnimationFrame(updateGame);
-}
+  function startGame() {
+    container.style.display = 'none';
+    gameCanvas.style.display = 'block';
+    document.addEventListener('keydown', handleMovement);
+    gameLoop();
+  }
 
-function backToHome() {
-    document.getElementById("startScreen").style.display = "block";
-    document.getElementById("gameCanvas").style.display = "none";
-    document.getElementById("score").style.display = "none";
-    document.getElementById("highScoreDisplay").style.display = "none";
-    document.getElementById("gameOver").style.display = "none";
-    document.getElementById("pauseMenu").style.display = "none";
-    isPaused = false;
-}
+  function showAnnouncement() {
+    announcementBox.style.display = 'block';
+    setTimeout(() => { announcementBox.style.display = 'none'; }, 3000);
+  }
 
-function togglePause() {
-    isPaused = !isPaused;
-    document.getElementById("pauseMenu").style.display = isPaused ? "block" : "none";
-    if (!isPaused) requestAnimationFrame(updateGame);
-}
+  function togglePause() {
+    gamePaused = !gamePaused;
+    pauseMenu.style.display = gamePaused ? 'block' : 'none';
+  }
 
-function createObstacle() {
-    const x = Math.floor(Math.random() * (canvas.width - 20));
-    const direction = Math.random() > 0.5 ? 1 : -1;
-    obstacles.push({ x: x, y: -30, width: 20, height: 20, dx: direction * 2 });
-}
+  function resumeGame() {
+    gamePaused = false;
+    pauseMenu.style.display = 'none';
+  }
 
-function generateObstacles() {
-    setInterval(() => {
-        if (!isPaused && !isGameOver && obstacles.length < 10) {
-            createObstacle();
-        }
-    }, 500);
-}
+  function goToHome() {
+    gamePaused = false;
+    pauseMenu.style.display = 'none';
+    container.style.display = 'flex';
+    gameCanvas.style.display = 'none';
+    ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+  }
 
-// Updated `updateScore` function to increase speed every 100 points
-function updateScore() {
-    if (!isPaused && !isGameOver) {
-        score += 1;
+  function showControls() {
+    alert("Controls:\nMove Left: A\nMove Right: D\nMove Up: W\nMove Down: S");
+  }
 
-        // Increase speed by 0.2 every 100 points
-        if (score % 100 === 0) {
-            speed += 0.2;
-        }
+  function handleMovement(event) {
+    if (!gamePaused) {
+      switch (event.key) {
+        case 'a': player.x -= player.speed; break;
+        case 'd': player.x += player.speed; break;
+        case 'w': player.y -= player.speed; break;
+        case 's': player.y += player.speed; break;
+        case 'Escape': togglePause(); break;
+      }
+    } else if (event.key === 'Escape') { togglePause(); }
+  }
+
+  function gameLoop() {
+    if (!gamePaused) {
+      ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+      ctx.fillStyle = '#0ff';
+      ctx.fillRect(player.x, player.y, player.size, player.size);
     }
-}
-setInterval(updateScore, 100);
+    requestAnimationFrame(gameLoop);
+  }
 
-function updateGame() {
-    if (isPaused || isGameOver) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "white";
-    ctx.beginPath();
-    ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-    ctx.fill();
+  // Set canvas size on load
+  window.onload = () => {
+    gameCanvas.width = window.innerWidth;
+    gameCanvas.height = window.innerHeight;
+  };
 
-    obstacles.forEach((obs, index) => {
-        ctx.fillStyle = "red";
-        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-        obs.y += speed;
-        obs.x += obs.dx;
-
-        if (obs.x <= 0 || obs.x + obs.width >= canvas.width) obs.dx *= -1;
-
-        if (obs.y > canvas.height) obstacles.splice(index, 1);
-
-        const dx = player.x - (obs.x + obs.width / 2);
-        const dy = player.y - (obs.y + obs.height / 2);
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance < player.radius + obs.width / 2) {
-            gameOver();
-        }
-    });
-
-    document.getElementById("score").textContent = `Score: ${score}`;
-    if (score > highScore) highScore = score;
-    document.getElementById("displayedHighScore").textContent = highScore;
-
-    requestAnimationFrame(updateGame);
-}
-
-function gameOver() {
-    isGameOver = true;
-    document.getElementById("gameOver").style.display = "block";
-    if (score > savedHighScore) {
-        savedHighScore = score;
-        localStorage.setItem('highScore', savedHighScore);
-    }
-}
-
-window.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") player.x -= 20;
-    if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") player.x += 20;
-    if (e.key === "p") togglePause();
-});
-
-canvas.addEventListener("touchstart", (e) => {
-    touchStartX = e.touches[0].clientX;
-});
-
+  window.addEventListener('resize', () => {
+    gameCanvas.width = window.innerWidth;
+    gameCanvas.height = window.innerHeight;
+  });
 </script>
+
 </body>
 </html>
